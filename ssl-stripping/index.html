@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anatomi Serangan SSL Stripping · Simulator EHE</title>
+<meta name="description" content="Website pembelajaran interaktif dan simulator SSL Stripping: intersepsi HTTP awal, dual-connection proxy, pencurian kredensial, dan proteksi HSTS.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2313315c'/%3E%3Crect x='9' y='15' width='14' height='10' rx='2.5' fill='%23dde9f7'/%3E%3Cpath d='M12 15v-3a4 4 0 0 1 7.6-1.8' stroke='%23dde9f7' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/ehe.css">
+</head>
+<body data-site="Simulator SSL Stripping">
+<a class="skip" href="#main">Lompat ke konten</a>
+<div id="progress" aria-hidden="true"></div>
+<div class="app">
+  <aside class="side" aria-label="Navigasi komponen">
+    <a class="logo" href="../index.html" aria-label="Kembali ke hub proyek"><svg viewBox="0 0 44 30" aria-hidden="true"><path d="M3 11c6-6 12-6 19 0s13 6 19 0M3 20c6-6 12-6 19 0s13 6 19 0" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg>EHE</a>
+    <a class="navbtn" href="#pengantar" data-nav="pengantar"><span class="no">1</span><svg class="ic"><use href="#i-intro"/></svg>Pengantar</a>
+    <a class="navbtn" href="#konsep" data-nav="konsep"><span class="no">2</span><svg class="ic"><use href="#i-concept"/></svg>Konsep</a>
+    <a class="navbtn" href="#proses" data-nav="proses"><span class="no">3</span><svg class="ic"><use href="#i-steps"/></svg>Proses</a>
+    <a class="navbtn" href="#simulasi" data-nav="simulasi"><span class="no">4</span><svg class="ic"><use href="#i-sim"/></svg>Simulasi</a>
+    <a class="navbtn" href="#pertahanan" data-nav="pertahanan"><span class="no">5</span><svg class="ic"><use href="#i-shield"/></svg>Pertahanan</a>
+    <a class="navbtn" href="#referensi" data-nav="referensi"><span class="no">6</span><svg class="ic"><use href="#i-refs"/></svg>Referensi</a>
+  </aside>
+  <div class="content">
+    <div class="topbar">
+      <div class="crumb"><a href="../index.html">Hub</a><svg class="ic sm"><use href="#i-chev"/></svg><span>SSL Stripping</span><svg class="ic sm"><use href="#i-chev"/></svg><b id="crumbHere"></b></div>
+      <div class="bar-right">
+        <details class="menu"><summary><svg class="ic sm"><use href="#i-grid"/></svg>Topik lain<svg class="ic sm"><use href="#i-down"/></svg></summary>
+          <div class="drop">
+            <a href="../index.html"><svg class="ic"><use href="#i-home"/></svg><span><b>Hub proyek</b>Semua topik dan anggota</span></a>
+            <a href="../udp-flood/index.html"><svg class="ic"><use href="#i-wave"/></svg><span><b>UDP Flood &amp; Port Exhaustion</b>Simulator serangan volumetrik</span></a>
+            <a href="../mitigasi-ddos-berlapis/index.html"><svg class="ic"><use href="#i-layers"/></svg><span><b>Mitigasi DDoS Berlapis</b>Simulator pertahanan</span></a>
+          </div></details>
+        <button class="roundbtn" id="themeBtn" aria-label="Ganti mode terang atau gelap"><svg class="ic"><use href="#i-contrast"/></svg></button>
+      </div>
+    </div>
+    <main id="main" tabindex="-1">
+
+<!-- ================= 1. PENGANTAR ================= -->
+<section class="page" data-page="pengantar" data-title="Pengantar Topik" aria-labelledby="h3-1">
+  <div class="bento">
+    <div class="s8"><header class="hero">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-ssl" width="600" height="400"/></svg>
+      <div class="hero-in">
+        <span class="eyebrow">Komponen 1 · Pengantar Topik</span>
+        <h1 id="h3-1">SSL Stripping</h1>
+        <div class="sub">Gembok yang dicopot</div>
+        <span class="k">Intinya</span>
+        <p class="lead">Penyerang yang berada di tengah jalur berbicara HTTPS dengan server asli, tetapi menyajikan HTTP polos ke korban, sehingga kata sandi korban terbaca. Penangkal utamanya adalah header HSTS <a class="cite" href="#ref-1">[1]</a>.</p>
+        <a class="pill" href="#simulasi">Langsung ke simulator <svg class="ic sm"><use href="#i-arrow"/></svg></a>
+      </div></header></div>
+    <div class="s4 stack">
+      <div class="tile stat"><svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-night" width="600" height="400"/></svg>
+        <span class="big">1 tahun</span><span class="lbl">browser mengingat aturan HTTPS-only</span><span class="chipw"><svg class="ic sm"><use href="#i-lock"/></svg>max-age=31536000</span></div>
+      <nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+        <li><a href="#s1-def">Definisi</a></li><li><a href="#s1-tujuan">Tujuan mempelajari</a></li><li><a href="#s1-relevansi">Relevansi keamanan siber</a></li><li><a href="#s1-etika">Etika</a></li></ol></nav>
+    </div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="s1-def"><div class="chead"><span class="no">01</span><h2>Definisi</h2></div><div class="body">
+      <p class="lede">SSL Stripping adalah serangan <em>Man-in-the-Middle</em> yang menurunkan koneksi korban dari HTTPS menjadi HTTP polos, tanpa memecahkan enkripsinya.</p>
+      <p><strong>HTTP</strong> adalah bahasa browser dan web server yang mengirim data sebagai teks polos. <strong>HTTPS</strong> adalah HTTP yang dibungkus enkripsi <strong>TLS</strong> (nama lamanya SSL), ditandai ikon gembok <a class="cite" href="#ref-2">[2]</a>. <strong>MitM</strong> (Man-in-the-Middle) adalah posisi penyerang yang diam-diam berada di tengah jalur komunikasi <a class="cite" href="#ref-2">[2]</a>. Anatomi SSL Stripping terdiri dari empat bagian <a class="cite" href="#ref-1">[1]</a>:</p>
+      <div class="defs">
+        <div><h4>Intersepsi HTTP initial</h4><p>Mencegat permintaan HTTP sebelum dialihkan ke HTTPS.</p></div>
+        <div><h4>Dual-connection proxy</h4><p>HTTPS ke server asli, tetapi HTTP polos ke browser korban.</p></div>
+        <div><h4>Pencurian kredensial</h4><p>Membaca formulir login yang dikirim lewat HTTP yang sudah diturunkan.</p></div>
+        <div><h4>Proteksi HSTS header</h4><p>Memaksa browser menolak koneksi HTTP polos secara permanen.</p></div>
+      </div>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Kurir palsu yang mengganti amplop</span><p>Bank mengirim surat dalam amplop tersegel ke kurir palsu yang mengaku sebagai Anda. Kurir membuka segelnya, membaca isinya, lalu mengantarnya ke Anda dalam amplop terbuka. Saat Anda membalas, ia membaca lagi lalu memasukkannya ke amplop tersegel untuk bank. Tidak ada yang sadar ada pembaca di tengah.</p></figure>
+    </div></div>
+    <div class="chapter" id="s1-tujuan"><div class="chead"><span class="no">02</span><h2>Tujuan mempelajari</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Memahami</strong> bahwa enkripsi kuat bisa dikalahkan tanpa dipecahkan, cukup dengan mencegahnya dimulai.</li>
+        <li><strong>Mengenali tanda-tanda</strong> di layar: alamat <code>http://</code>, gembok hilang, dan tulisan "Tidak aman".</li>
+        <li><strong>Menerapkan pertahanan</strong> di sisi server (HSTS, atribut cookie) dan di sisi pengguna (VPN, kebiasaan memeriksa gembok).</li>
+        <li><strong>Memahami batas HSTS</strong>, terutama celah kunjungan pertama dan cara menutupnya dengan preload.</li>
+      </ul>
+    </div></div>
+    <div class="chapter" id="s1-relevansi"><div class="chead"><span class="no">03</span><h2>Relevansi keamanan siber</h2></div><div class="body">
+      <p>SSL Stripping menyerang <strong>kerahasiaan</strong> (confidentiality): kata sandi dan cookie sesi jatuh ke tangan penyerang. Token sesi adalah "kunci emas": siapa yang memegangnya bisa masuk tanpa password, bahkan melewati MFA <a class="cite" href="#ref-1">[1]</a>. Wi-Fi publik membuat serangan ini realistis, karena pengguna bisa saling berkomunikasi, sinyal tidak terenkripsi bisa ditangkap, dan hotspot palsu (Evil Twin) mudah dibuat <a class="cite" href="#ref-2">[2]</a>.</p>
+    </div></div>
+    <div class="chapter" id="s1-etika"><div class="chead"><span class="no">04</span><h2>Etika</h2></div><div class="body">
+      <div class="ethics"><svg class="ic"><use href="#i-scale"/></svg><p>Simulator ini hanya model visual dengan domain fiktif (<code>bank.contoh</code>) dan kredensial palsu. Situs ini tidak memuat alat atau perintah serangan. Teknik MitM hanya boleh dipelajari di lab yang diizinkan <a class="cite" href="#ref-3">[3]</a>; menyadap atau mengakses sistem orang lain tanpa hak adalah tindak pidana menurut UU ITE <a class="cite" href="#ref-10">[10]</a><a class="cite" href="#ref-11">[11]</a>.</p></div>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>SSL Stripping menurunkan HTTPS menjadi HTTP polos tanpa memecahkan enkripsi.</li>
+    <li>Empat bagian: intersepsi HTTP awal, proxy dua koneksi, pencurian kredensial, proteksi HSTS.</li>
+    <li>Yang diserang adalah kerahasiaan: password dan cookie sesi.</li></ol></div>
+  <nav class="pager" aria-label="Komponen berikutnya"><a class="nx" href="#konsep"><span><small>Komponen 2</small><b>Penjelasan Konsep</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 2. KONSEP ================= -->
+<section class="page" data-page="konsep" data-title="Penjelasan Konsep" aria-labelledby="h3-2">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-globe" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 2 · Penjelasan Konsep</span><h1 id="h3-2">Mengapa HTTPS bisa dilepas</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">HTTPS melindungi data yang lewat, tetapi tidak melindungi momen sebelum HTTPS dimulai. Penyerang yang sudah berada di tengah memanfaatkan momen itu.</p></div></header></div>
+    <div class="s4 stack"><nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+      <li><a href="#k3-tls">Apa yang dilindungi TLS</a></li><li><a href="#k3-celah">Celah permintaan pertama</a></li><li><a href="#k3-tengah">Cara masuk ke tengah</a></li><li><a href="#k3-kasus">Contoh kasus: Wi-Fi publik</a></li><li><a href="#k3-risiko">Risiko terkait</a></li></ol></nav></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="k3-tls"><div class="chead"><span class="no">01</span><h2>Apa yang dilindungi TLS</h2></div><div class="body">
+      <p>Protokol lama seperti HTTP (port 80), Telnet, FTP, dan POP3 mengirim data sebagai teks polos, sehingga form login, cookie sesi, dan kata sandi bisa disadap <a class="cite" href="#ref-2">[2]</a>. <strong>TLS</strong> bekerja di atas TCP: kriptografi asimetris (RSA/ECC) dipakai untuk bertukar kunci, lalu kriptografi simetris (AES-GCM) dipakai untuk mengenkripsi data <a class="cite" href="#ref-2">[2]</a><a class="cite" href="#ref-9">[9]</a>. Penyadap hanya melihat data acak.</p>
+      <p>Karena itu, penyadapan lewat ARP poisoning menjadi tidak berguna terhadap HTTPS <a class="cite" href="#ref-2">[2]</a>. SSL Stripping adalah cara mengakali hal itu: bukan dengan memecahkan enkripsi, tetapi dengan mencegahnya dimulai.</p>
+    </div></div>
+    <div class="chapter" id="k3-celah"><div class="chead"><span class="no">02</span><h2>Celah permintaan pertama</h2></div><div class="body">
+      <p>Kebanyakan orang mengetik <code>bank.contoh</code>, bukan <code>https://bank.contoh</code>. Browser yang belum punya aturan khusus lalu mengirim permintaan pertama lewat HTTP polos, dan server menjawab "silakan pindah ke HTTPS". Jawaban pengalihan itu masih lewat HTTP, dan di situlah penyerang mencegat <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-5">[5]</a>.</p>
+      <div class="vsgrid">
+        <div class="tile"><h4>Tanpa penyerang</h4><p>Browser mengirim <code>http://bank.contoh</code>, server membalas "pindah ke https://", browser lalu membuka koneksi TLS. Selamat, karena tidak ada yang mencegat pengalihan.</p></div>
+        <div class="tile"><h4>Dengan penyerang di tengah</h4><p>Penyerang menangkap permintaan HTTP itu, membuka HTTPS sendiri ke server, lalu terus melayani korban lewat HTTP. Korban tidak pernah "naik" ke HTTPS.</p></div>
+      </div>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Surat pertama yang belum tersegel</span><p>Bank selalu membalas dalam amplop tersegel, tetapi surat pertama Anda, "Halo, saya mau mulai berkirim surat", ditulis di kartu pos. Kurir palsu membaca kartu pos itu dan memutuskan untuk berpura-pura menjadi bank sejak awal.</p></figure>
+    </div></div>
+    <div class="chapter" id="k3-tengah"><div class="chead"><span class="no">03</span><h2>Cara masuk ke tengah</h2></div><div class="body">
+      <p>SSL Stripping hanya bisa dilakukan jika penyerang sudah berada di jalur. Komponen dan teknik yang terlibat:</p>
+      <div class="defs">
+        <div><h4>ARP poisoning</h4><p>ARP tidak punya otentikasi. Penyerang mengirim balasan ARP palsu ke korban dan router, lalu menyalakan <em>IP forwarding</em> agar koneksi korban tetap berjalan dan ia tidak curiga <a class="cite" href="#ref-2">[2]</a>.</p></div>
+        <div><h4>Evil Twin</h4><p>Hotspot Wi-Fi palsu dengan nama mirip hotspot asli, sehingga semua trafik korban melewati perangkat penyerang <a class="cite" href="#ref-2">[2]</a>.</p></div>
+        <div><h4>DNS spoofing</h4><p>Penyerang menjawab pertanyaan DNS korban lebih cepat dari server asli, sehingga nama domain diarahkan ke alamatnya <a class="cite" href="#ref-1">[1]</a>.</p></div>
+        <div><h4>Rogue DHCP</h4><p>Server DHCP palsu memberi korban gateway dan DNS milik penyerang <a class="cite" href="#ref-2">[2]</a>.</p></div>
+      </div>
+      <p class="muted small">Situs ini sengaja tidak menampilkan perintah atau alat untuk melakukan teknik-teknik tersebut.</p>
+    </div></div>
+    <div class="chapter" id="k3-kasus"><div class="chead"><span class="no">04</span><h2>Contoh kasus: Wi-Fi publik</h2></div><div class="body">
+      <p class="lede">Seseorang di bandara atau kafe tersambung ke Wi-Fi gratis, tanpa tahu bahwa hotspot itu palsu.</p>
+      <p>Dokumentasi MDN memakai skenario serupa: pengguna di bandara tersambung ke <em>rogue access point</em>, sehingga koneksi HTTP-nya bisa dibelokkan; HSTS membuat browser menolak penurunan itu <a class="cite" href="#ref-6">[6]</a>. Materi kuliah mencatat kerentanan hotspot terbuka: tidak ada isolasi antarpengguna, paket Wi-Fi bisa ditangkap, dan Evil Twin dengan SSID serupa. Rekomendasinya: selalu VPN, paksa HTTPS/HSTS, dan matikan sambung otomatis <a class="cite" href="#ref-2">[2]</a>.</p>
+      <div class="note"><svg class="ic"><use href="#i-wifi"/></svg><p><span class="k">Coba di simulator.</span> Skenario "Wi-Fi kafe, Evil Twin" memperagakan kasus ini dengan domain fiktif <code>bank.contoh</code>.</p></div>
+    </div></div>
+    <div class="chapter" id="k3-risiko"><div class="chead"><span class="no">05</span><h2>Risiko terkait</h2></div><div class="body">
+      <div class="tbl"><table>
+        <thead><tr><th>Jenis pembajakan</th><th>Cara masuk</th><th>Penangkal utama</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>SSL Stripping / MitM</td><td>Penurunan ke HTTP polos</td><td class="em">HSTS (Strict-Transport-Security)</td></tr>
+          <tr><td>Cross-Site Scripting (XSS)</td><td>Membaca <code>document.cookie</code></td><td class="em">Cookie HttpOnly, header CSP</td></tr>
+          <tr><td>CSRF</td><td>Cookie terkirim otomatis</td><td class="em">Token anti-CSRF, SameSite=Strict</td></tr>
+          <tr><td>TCP session hijacking</td><td>Nomor urut yang bisa ditebak, penyadapan</td><td class="em">IPsec, ISN acak di kernel</td></tr>
+        </tbody></table></div>
+      <p class="muted small">Sumber tabel: <a class="cite" href="#ref-1">[1]</a>.</p>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>TLS melindungi data yang lewat, bukan momen sebelum HTTPS dimulai.</li>
+    <li>Permintaan HTTP pertama adalah titik lemahnya.</li>
+    <li>Penyerang harus berada di tengah dulu: ARP poisoning, Evil Twin, DNS spoofing, atau rogue DHCP.</li>
+    <li>Wi-Fi publik membuat serangan ini realistis.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#pengantar"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 1</small><b>Pengantar Topik</b></span></a><a class="nx" href="#proses"><span><small>Komponen 3</small><b>Proses Bertahap</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 3. PROSES ================= -->
+<section class="page" data-page="proses" data-title="Proses Bertahap" aria-labelledby="h3-3">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-night" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 3 · Proses Bertahap</span><h1 id="h3-3">Dari Wi-Fi palsu sampai password terbaca</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">Penyerang masuk ke tengah, mencegat permintaan HTTP pertama, membuka dua koneksi berbeda, lalu membaca formulir login. HSTS memotong rantai ini di langkah kedua.</p></div></header></div>
+    <div class="s4 stack"><div class="tile stat"><svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-ssl" width="600" height="400"/></svg><span class="big">6 tahap</span><span class="lbl">dari posisi MitM sampai penyamaran sempurna</span></div></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="pr3-tahap"><div class="chead"><span class="no">01</span><h2>Tahap demi tahap</h2></div><div class="body">
+      <ol class="process">
+        <li><div><b>Masuk ke tengah.</b>Penyerang menjadi perantara lewat Evil Twin, ARP poisoning, DNS spoofing, atau rogue DHCP <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-2">[2]</a>.</div></li>
+        <li><div><b>Intersepsi HTTP awal.</b>Korban mengetik <code>bank.contoh</code>. Permintaan HTTP pertama ditangkap sebelum server sempat mengalihkan ke HTTPS <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Proxy dua koneksi, sisi server.</b>Penyerang membuka HTTPS yang sah ke server asli. Di mata server, ini pengunjung biasa <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Proxy dua koneksi, sisi korban.</b>Penyerang mengganti semua tautan <code>https://</code> menjadi <code>http://</code> dan melayani korban lewat HTTP polos <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Pencurian kredensial.</b>Korban mengisi formulir login; penyerang membacanya sebagai teks polos <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Penyamaran sempurna.</b>Penyerang meneruskan login ke server lewat HTTPS. Korban masuk ke akunnya seperti biasa, dan penyerang juga memegang cookie sesinya <a class="cite" href="#ref-1">[1]</a>.</div></li>
+      </ol>
+      <h3>Di mana HSTS memotong rantai</h3>
+      <p>Jika browser sudah mengenal aturan HSTS situs itu, alamat <code>http://</code> diubah menjadi <code>https://</code> <em>di dalam browser</em>, sebelum ada paket yang keluar. Tahap 2 tidak pernah terjadi, dan jika penyerang menyodorkan sertifikat palsu, browser menolak tanpa memberi pilihan "lanjutkan" <a class="cite" href="#ref-4">[4]</a><a class="cite" href="#ref-5">[5]</a><a class="cite" href="#ref-6">[6]</a>.</p>
+    </div></div>
+    <div class="chapter" id="pr3-deteksi"><div class="chead"><span class="no">02</span><h2>Sisi pembela: deteksi</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Di komputer korban:</strong> jika dua alamat IP berbeda (misalnya gateway dan komputer lain) memiliki MAC address yang sama di tabel ARP, hampir pasti terjadi ARP poisoning <a class="cite" href="#ref-2">[2]</a>.</li>
+        <li><strong>Di jaringan:</strong> gelombang balasan ARP yang dikirim tanpa diminta, dan lonjakan balasan ARP lebih dari 100 per detik per host, adalah indikator SOC <a class="cite" href="#ref-2">[2]</a>.</li>
+        <li><strong>Di aplikasi:</strong> perubahan alamat IP atau User-Agent secara tiba-tiba di tengah sesi dengan cookie yang sama patut dicurigai <a class="cite" href="#ref-1">[1]</a>.</li>
+        <li><strong>Di layar:</strong> gembok hilang dan alamat diawali <code>http://</code> di halaman yang biasanya aman.</li>
+      </ul>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>Masuk ke tengah, cegat HTTP awal, proxy dua koneksi, baca login, teruskan ke server.</li>
+    <li>HSTS memotong rantai sebelum paket HTTP pertama keluar.</li>
+    <li>ARP duplikat dan gembok yang hilang adalah tanda bahaya.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#konsep"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 2</small><b>Penjelasan Konsep</b></span></a><a class="nx" href="#simulasi"><span><small>Komponen 4</small><b>Simulasi Interaktif</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 4. SIMULASI ================= -->
+<section class="page" data-page="simulasi" data-title="Simulasi Interaktif" aria-labelledby="h3-4">
+  <div class="hello"><span class="eyebrow">Komponen 4 · Simulasi Interaktif</span><h1 id="h3-4">Simulator SSL Stripping</h1>
+    <p><strong>Intinya:</strong> pilih skenario, isi data login palsu, ikuti diagram urutan langkah demi langkah, lalu nyalakan pertahanan dan lihat di titik mana serangan berhenti. Semua domain dan kredensial di sini fiktif.</p></div>
+
+  <div class="sim" id="sim3">
+    <div class="sim-h"><h3>Korban, penyerang, dan server asli</h3><small>Model visual · domain fiktif bank.contoh</small></div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">1</span>Pilih skenario</div>
+      <div class="scen" role="group" aria-label="Skenario">
+        <button data-scen="cafe" aria-pressed="true"><b>Wi-Fi kafe, Evil Twin</b><span>Mengetik bank.contoh · situs tanpa HSTS</span></button>
+        <button data-scen="arp" aria-pressed="false"><b>LAN kantor, ARP poisoning</b><span>Mengetik bank.contoh · situs tanpa HSTS</span></button>
+        <button data-scen="bookmark" aria-pressed="false"><b>Membuka bookmark https://</b><span>Situs tanpa HSTS</span></button>
+        <button data-scen="hsts" aria-pressed="false"><b>Situs ber-HSTS, kunjungan ulang</b><span>Browser sudah menyimpan aturan</span></button>
+        <button data-scen="hstsfirst" aria-pressed="false"><b>Situs ber-HSTS, kunjungan pertama</b><span>Aturan belum tersimpan</span></button>
+        <button data-scen="preload" aria-pressed="false"><b>Situs di HSTS preload list</b><span>Kunjungan pertama</span></button>
+      </div></div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">2</span>Data simulasi</div>
+      <div class="params">
+        <label class="field">Cara penyerang masuk ke tengah<select data-p="vector"><option value="evil">Evil Twin (hotspot palsu)</option><option value="arp">ARP poisoning (LAN)</option></select></label>
+        <label class="field">Cara korban membuka situs<select data-p="entry"><option value="typed">Mengetik bank.contoh</option><option value="bookmark">Bookmark https://bank.contoh</option></select></label>
+        <label class="field">Riwayat kunjungan<select data-p="returning"><option value="0">Kunjungan pertama</option><option value="1">Pernah berkunjung (punya cookie sesi)</option></select></label>
+        <label class="field">Username (palsu)<input class="inp" data-p="user" value="budi" maxlength="24" autocomplete="off"></label>
+        <label class="field">Password (palsu)<input class="inp" data-p="pass" value="Kucing123" maxlength="24" autocomplete="off"><small>Jangan memakai password asli Anda.</small></label>
+      </div></div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">3</span>Pertahanan (untuk dijalankan ulang)</div>
+      <div class="chips" role="group" aria-label="Pertahanan">
+        <label class="chk"><input type="checkbox" data-d="hsts">Header HSTS di server</label>
+        <label class="chk"><input type="checkbox" data-d="preload">HSTS preload</label>
+        <label class="chk"><input type="checkbox" data-d="cookie">Cookie Secure, HttpOnly, SameSite</label>
+        <label class="chk"><input type="checkbox" data-d="vpn">VPN di perangkat korban</label>
+        <label class="chk"><input type="checkbox" data-d="check">Korban memeriksa gembok</label>
+      </div>
+      <p class="muted small" style="margin:10px 0 0">Perubahan pertahanan langsung mengubah alur di bawah. Tekan "Bandingkan" untuk evaluasi sebelum dan sesudah.</p></div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">4</span>Diagram urutan</div>
+      <div class="ctrl">
+        <button class="ghost" data-act="prev"><svg class="ic sm"><use href="#i-chevl"/></svg>Sebelumnya</button>
+        <button class="play" data-act="play" aria-label="Putar otomatis"><svg class="ic"><use href="#i-play"/></svg></button>
+        <button class="ghost primary" data-act="next">Berikutnya<svg class="ic sm"><use href="#i-chev"/></svg></button>
+        <span class="stepno" data-label></span>
+        <button class="ghost" data-act="reset"><svg class="ic sm"><use href="#i-reset"/></svg>Reset</button>
+      </div>
+      <div class="stage-cap" aria-live="polite"><h4 data-st-title></h4><p data-st-text></p></div>
+      <div class="cmp" style="margin-top:14px">
+        <div><div class="lbl2">Yang dilihat korban</div>
+          <div class="browser"><div class="chrome"><span class="dots"><i></i><i></i><i></i></span><div class="urlbar" data-url></div></div>
+            <div class="page-body" data-page-body></div></div></div>
+        <div><div class="lbl2">Yang bisa dibaca penyerang</div><div class="loot" data-loot>—</div></div>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span><svg viewBox="0 0 14 14"><line x1="1" y1="7" x2="13" y2="7" stroke="var(--c-strong)" stroke-width="3"/></svg>HTTPS, terenkripsi</span>
+        <span><svg viewBox="0 0 14 14"><line x1="1" y1="7" x2="13" y2="7" stroke="var(--c-mid)" stroke-width="2.4" stroke-dasharray="3 2.5"/></svg>HTTP polos, bisa dibaca</span>
+      </div>
+      <div class="seqwrap" style="margin-top:10px"><svg data-seq viewBox="0 0 800 300" role="img" aria-label="Diagram urutan komunikasi antara korban, penyerang, dan server asli. Keterangan tiap langkah ada di atas diagram."></svg></div>
+      <p class="hint">Geser diagram ke samping untuk melihat seluruhnya.</p>
+    </div>
+    <div class="sim-sec" data-result><div class="lbl2"><span class="n">5</span>Hasil &amp; evaluasi</div><p class="muted">Hasil muncul di tahap terakhir.</p></div>
+    <div class="sim-sec"><button class="ghost primary" data-act="evaluate"><svg class="ic sm"><use href="#i-play"/></svg>Bandingkan dengan tanpa pertahanan</button><div data-eval style="margin-top:14px"></div></div>
+  </div>
+
+  <div class="article">
+    <div class="chapter" id="spot"><div class="chead"><span class="no">i</span><h2>Temukan perbedaannya</h2><p>Klik tanda bahaya pada halaman kanan. Ada tiga.</p></div><div class="body wide">
+      <div class="cmp">
+        <figure style="margin:0"><div class="lbl2">Halaman asli</div><div class="browser"><div class="chrome"><span class="dots"><i></i><i></i><i></i></span><div class="urlbar"><svg class="ic"><use href="#i-lock"/></svg><span class="u"><b>https://</b>bank.contoh/login</span></div></div>
+          <div class="page-body"><h5>Masuk ke bank.contoh</h5><div class="fake-in">username</div><div class="fake-in">password</div><div class="fake-btn">Masuk</div></div></div></figure>
+        <figure style="margin:0"><div class="lbl2">Halaman yang di-strip</div><div class="browser"><div class="chrome"><span class="dots"><i></i><i></i><i></i></span><div class="urlbar">
+            <button class="hot" data-hot="lock" aria-label="Area ikon gembok"><span style="display:inline-block;width:16px;height:16px;border:1.5px dashed var(--b300);border-radius:4px"></span></button>
+            <button class="hot" data-hot="warn"><span class="chip bad">Tidak aman</span></button>
+            <span class="u"><button class="hot" data-hot="scheme"><span class="dim">http://</span></button>bank.contoh/login</span></div></div>
+          <div class="page-body"><button class="hot" data-hot="decoy1"><h5>Masuk ke bank.contoh</h5></button><div class="fake-in">username</div><div class="fake-in">password</div><button class="hot" data-hot="decoy2" style="display:block"><span class="fake-btn" style="padding:0 40px">Masuk</span></button></div></div></figure>
+      </div>
+      <p aria-live="polite" data-spot style="margin-top:14px"><strong>Ditemukan 0 dari 3.</strong> Klik bagian halaman kanan yang berbeda dari halaman asli.</p>
+    </div></div>
+    <div class="chapter" id="builder"><div class="chead"><span class="no">ii</span><h2>Penyusun header HSTS</h2><p>Atur nilainya dan lihat hasilnya.</p></div><div class="body">
+      <div class="params">
+        <label class="field">max-age<select data-b="age"><option value="0">0 (menghapus aturan)</option><option value="300">300 detik (5 menit)</option><option value="86400">86400 (1 hari)</option><option value="2592000">2592000 (30 hari)</option><option value="31536000" selected>31536000 (1 tahun)</option><option value="63072000">63072000 (2 tahun)</option></select></label>
+        <div class="field">Direktif tambahan<div class="chips"><label class="chk"><input type="checkbox" data-b="sub" checked>includeSubDomains</label><label class="chk"><input type="checkbox" data-b="pre">preload</label></div></div>
+      </div>
+      <div class="lbl2" style="margin-top:18px">Header yang dihasilkan</div>
+      <div class="headerline" data-hdr aria-live="polite"></div>
+      <div class="lbl2" style="margin-top:12px">Baris konfigurasi Nginx</div>
+      <div class="headerline" data-ngx></div>
+      <ul class="fbl" data-bnotes></ul>
+    </div></div>
+    <div class="chapter" id="uji"><div class="chead"><span class="no">iii</span><h2>Uji pemahaman</h2><p>Enam soal singkat dengan penjelasan.</p></div><div class="body wide">
+      <div class="quiz" id="quiz3"></div>
+      <div class="score" data-scorebar aria-live="polite"><span>Skor <span class="num" data-score>0</span> / <span data-total>6</span> <span style="opacity:.75;margin-left:8px">dijawab <span data-done>0</span></span></span><button class="ghost" data-act="quiz-reset"><svg class="ic sm"><use href="#i-reset"/></svg>Ulangi</button></div>
+    </div></div>
+  </div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#proses"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 3</small><b>Proses Bertahap</b></span></a><a class="nx" href="#pertahanan"><span><small>Komponen 5</small><b>Penanggulangan</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 5. PERTAHANAN ================= -->
+<section class="page" data-page="pertahanan" data-title="Penanggulangan Keamanan" aria-labelledby="h3-5">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-layers" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 5 · Penanggulangan Keamanan</span><h1 id="h3-5">Menjaga gembok tetap terpasang</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">Server memasang HSTS dan mendaftar ke preload list, cookie diberi atribut pengaman, dan pengguna memakai VPN di Wi-Fi publik serta memeriksa gembok.</p></div></header></div>
+    <div class="s4 stack"><nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+      <li><a href="#d3-hsts">HSTS</a></li><li><a href="#d3-cookie">Atribut cookie</a></li><li><a href="#d3-praktik">Praktik pengguna</a></li><li><a href="#d3-batas">Batasan HSTS</a></li></ol></nav></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="d3-hsts"><div class="chead"><span class="no">01</span><h2>HSTS</h2></div><div class="body">
+      <p><strong>HTTP Strict Transport Security</strong> (RFC 6797) adalah instruksi dari server agar browser <em>hanya</em> berkomunikasi lewat HTTPS dengan situs itu selama jangka waktu tertentu <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-4">[4]</a>. Browser otomatis menolak HTTP polos sebelum dikirim ke jaringan, dan tidak membiarkan pengguna melewati peringatan sertifikat yang tidak valid <a class="cite" href="#ref-5">[5]</a><a class="cite" href="#ref-6">[6]</a>.</p>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Catatan dari bank untuk browser Anda</span><p>"Jangan pernah menerima surat dari saya dalam amplop terbuka. Kalau ada yang mengantar amplop terbuka atas nama saya, tolak."</p></figure>
+      <div class="code" role="group" aria-label="Header HSTS dengan penjelasan per baris">
+        <div class="hd"><span>Nginx / Apache · header HSTS</span></div>
+        <div class="row"><pre><span class="k">add_header</span> Strict-Transport-Security</pre><div class="ex">Tambahkan header <code>Strict-Transport-Security</code> pada setiap jawaban HTTPS <a class="cite" href="#ref-1">[1]</a>.</div></div>
+        <div class="row"><pre>  "max-age=31536000;</pre><div class="ex">Ingat aturan selama <b>31.536.000 detik = 365 hari</b> <a class="cite" href="#ref-6">[6]</a>.</div></div>
+        <div class="row"><pre>   includeSubDomains"</pre><div class="ex">Berlaku juga untuk semua subdomain, misalnya <code>login.bank.contoh</code> <a class="cite" href="#ref-4">[4]</a>.</div></div>
+        <div class="row"><pre>  always;</pre><div class="ex">Kirim header pada semua jenis jawaban, termasuk halaman error.</div></div>
+      </div>
+      <p><strong>Preload.</strong> Domain yang memenuhi syarat (sertifikat valid, pengalihan HTTP ke HTTPS, semua subdomain HTTPS, <code>max-age</code> minimal 31536000, <code>includeSubDomains</code>, dan <code>preload</code>) bisa didaftarkan ke daftar yang tertanam di browser, sehingga terlindungi bahkan sebelum kunjungan pertama <a class="cite" href="#ref-8">[8]</a>. Keputusan ini sulit dibatalkan, jadi pastikan semua subdomain sudah siap HTTPS <a class="cite" href="#ref-5">[5]</a><a class="cite" href="#ref-8">[8]</a>.</p>
+    </div></div>
+    <div class="chapter" id="d3-cookie"><div class="chead"><span class="no">02</span><h2>Atribut cookie</h2></div><div class="body">
+      <p>Cookie sesi adalah "gelang tiket" setelah login. Atribut pengaman memperkecil cara tiket itu dicuri <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-7">[7]</a>:</p>
+      <div class="code" role="group" aria-label="Header Set-Cookie dengan penjelasan per baris">
+        <div class="hd"><span>Header Set-Cookie yang ideal</span></div>
+        <div class="row"><pre>Set-Cookie: PHPSESSID=xyz123abc987;
+  Path=/;</pre><div class="ex">Nama dan nilai cookie sesi; berlaku di seluruh situs.</div></div>
+        <div class="row"><pre>  <span class="k">Secure</span>;</pre><div class="ex">Hanya dikirim lewat <code>https:</code>. Cookie yang sudah tersimpan tidak ikut terkirim di koneksi HTTP yang di-strip <a class="cite" href="#ref-7">[7]</a>.</div></div>
+        <div class="row"><pre>  <span class="k">HttpOnly</span>;</pre><div class="ex">JavaScript tidak bisa membacanya lewat <code>document.cookie</code>; menangkal XSS <a class="cite" href="#ref-7">[7]</a>.</div></div>
+        <div class="row"><pre>  <span class="k">SameSite=Strict</span></pre><div class="ex">Hanya dikirim untuk permintaan dari situs yang sama; menangkal CSRF <a class="cite" href="#ref-7">[7]</a>.</div></div>
+      </div>
+      <div class="note"><svg class="ic"><use href="#i-alert"/></svg><p><span class="k">Catatan penting.</span> Atribut cookie tidak mencegah password dicuri saat SSL Stripping, karena korban mengetik password di halaman HTTP palsu. Atribut ini melindungi cookie lama dan menutup celah lain (XSS, CSRF). Penangkal utama SSL Stripping tetap HSTS.</p></div>
+    </div></div>
+    <div class="chapter" id="d3-praktik"><div class="chead"><span class="no">03</span><h2>Praktik pengguna</h2></div><div class="body">
+      <div class="defs">
+        <div><h4>Selalu VPN di Wi-Fi publik</h4><p>Seluruh trafik dibungkus terowongan terenkripsi (WireGuard/OpenVPN), sehingga penyerang di jaringan lokal tidak bisa menyentuh HTTP Anda <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-2">[2]</a>.</p></div>
+        <div><h4>Paksa HTTPS</h4><p>Ketik <code>https://</code>, gunakan bookmark, atau nyalakan mode HTTPS-only di browser <a class="cite" href="#ref-2">[2]</a>.</p></div>
+        <div><h4>Periksa gembok</h4><p>Halaman login tanpa gembok, atau dengan tulisan "Tidak aman", berarti berhenti.</p></div>
+        <div><h4>Matikan sambung otomatis</h4><p>Jangan biarkan perangkat bergabung sendiri ke hotspot terbuka, karena itulah pintu masuk Evil Twin <a class="cite" href="#ref-2">[2]</a>.</p></div>
+      </div>
+      <p><strong>Di sisi jaringan</strong>, Dynamic ARP Inspection, DHCP Snooping, dan Port Security mencegah penyerang masuk ke tengah sejak awal <a class="cite" href="#ref-2">[2]</a>.</p>
+    </div></div>
+    <div class="chapter" id="d3-batas"><div class="chead"><span class="no">04</span><h2>Batasan HSTS</h2></div><div class="body">
+      <p class="lede">HSTS baru bekerja setelah browser pernah membuat satu koneksi aman ke situs itu.</p>
+      <p>Browser mengabaikan header HSTS yang dikirim lewat HTTP, agar tidak bisa dipalsukan penyerang <a class="cite" href="#ref-6">[6]</a>. Akibatnya, kunjungan pertama, atau kunjungan setelah <code>max-age</code> habis, masih bisa dicegat; RFC 6797 menyebutnya <em>bootstrap MITM vulnerability</em> <a class="cite" href="#ref-4">[4]</a>. Celah ini ditutup oleh <strong>HSTS preload list</strong> <a class="cite" href="#ref-6">[6]</a><a class="cite" href="#ref-8">[8]</a>. HSTS juga hanya melindungi situs yang memasangnya.</p>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>HSTS (<code>max-age=31536000; includeSubDomains</code>) membuat browser menolak HTTP polos.</li>
+    <li>Preload menutup celah kunjungan pertama.</li>
+    <li>Cookie Secure, HttpOnly, SameSite=Strict melindungi cookie, tetapi tidak menggantikan HSTS.</li>
+    <li>VPN dan kebiasaan memeriksa gembok melindungi pengguna di Wi-Fi publik.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#simulasi"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 4</small><b>Simulasi Interaktif</b></span></a><a class="nx" href="#referensi"><span><small>Komponen 6</small><b>Referensi</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 6. REFERENSI ================= -->
+<section class="page" data-page="referensi" data-title="Referensi" aria-labelledby="h3-6">
+  <div class="hello"><span class="eyebrow">Komponen 6 · Referensi</span><h1 id="h3-6">Referensi</h1><p>Format APA 7. Nomor di dalam teks, misalnya [1], mengarah ke daftar di bawah. Semua tautan diperiksa dapat dibuka pada November 2026.</p></div>
+  <div class="article"><div class="chapter"><div class="chead"><span class="no">≡</span><h2>Daftar pustaka</h2></div><div class="body">
+    <ol class="refs">
+      <li id="ref-1"><span>Dinata, Y. M., &amp; Wonohadidjojo, D. M. (2026). <em>Network level attacks &amp; defense: Denial-of-Service (DoS/DDoS), botnet, &amp; session hijacking</em> (Modul 07 Bagian 2, slide 62, 68, 75–80) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502, Program Studi Informatika, Universitas Ciputra.</span></li>
+      <li id="ref-2"><span>Dinata, Y. M., &amp; Wonohadidjojo, D. M. (2026). <em>Network level attacks &amp; reconnaissance</em> (Modul 07 Bagian 1, slide 15, 17, 20–24, 32–37, 39, 41, 44) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502, Program Studi Informatika, Universitas Ciputra.</span></li>
+      <li id="ref-3"><span>Universitas Ciputra. (2026). <em>Week 10: Reconnaissance, enumerasi, dan analisis kerentanan</em> (slide 19) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502.</span></li>
+      <li id="ref-4"><span>Hodges, J., Jackson, C., &amp; Barth, A. (2012). <em>HTTP Strict Transport Security (HSTS)</em> (RFC 6797). RFC Editor. <a href="https://www.rfc-editor.org/rfc/rfc6797">https://www.rfc-editor.org/rfc/rfc6797</a></span></li>
+      <li id="ref-5"><span>OWASP Cheat Sheet Series. (n.d.). <em>HTTP Strict Transport Security cheat sheet</em>. OWASP Foundation. <a href="https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html</a></span></li>
+      <li id="ref-6"><span>MDN contributors. (2026). <em>Strict-Transport-Security header</em>. MDN Web Docs. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Strict-Transport-Security">https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Strict-Transport-Security</a></span></li>
+      <li id="ref-7"><span>MDN contributors. (2026). <em>Set-Cookie header</em>. MDN Web Docs. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie">https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie</a></span></li>
+      <li id="ref-8"><span>HSTS Preload List Submission. (n.d.). <em>HSTS preload list submission</em>. <a href="https://hstspreload.org/">https://hstspreload.org/</a></span></li>
+      <li id="ref-9"><span>Rescorla, E. (2018). <em>The Transport Layer Security (TLS) protocol version 1.3</em> (RFC 8446). RFC Editor. <a href="https://www.rfc-editor.org/rfc/rfc8446">https://www.rfc-editor.org/rfc/rfc8446</a></span></li>
+      <li id="ref-10"><span>Republik Indonesia. (2008). <em>Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik</em>. JDIH BPK. <a href="https://peraturan.bpk.go.id/Details/37589/uu-no-11-tahun-2008">https://peraturan.bpk.go.id/Details/37589/uu-no-11-tahun-2008</a></span></li>
+      <li id="ref-11"><span>Republik Indonesia. (2024). <em>Undang-Undang Nomor 1 Tahun 2024 tentang Perubahan Kedua atas Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik</em>. JDIH BPK. <a href="https://peraturan.bpk.go.id/Details/274494/uu-no-1-tahun-2024">https://peraturan.bpk.go.id/Details/274494/uu-no-1-tahun-2024</a></span></li>
+    </ol>
+  </div></div></div>
+  <div class="tile remember"><h2>Peta komponen tugas</h2><ol>
+    <li><a href="#pengantar">Pengantar Topik</a>: nama topik, definisi empat bagian, tujuan, relevansi.</li>
+    <li><a href="#konsep">Penjelasan Konsep</a>: TLS, celah permintaan pertama, cara masuk ke tengah, contoh kasus Wi-Fi publik, risiko.</li>
+    <li><a href="#proses">Proses Bertahap</a>: enam tahap serangan, titik potong HSTS, deteksi.</li>
+    <li><a href="#simulasi">Simulasi Interaktif</a>: skenario, data, pertahanan, diagram urutan, hasil, evaluasi, latihan temukan perbedaan, penyusun header HSTS, uji pemahaman.</li>
+    <li><a href="#pertahanan">Penanggulangan Keamanan</a>: HSTS, atribut cookie, praktik pengguna, batasan HSTS.</li>
+    <li><a href="#referensi">Referensi</a>: daftar pustaka dengan sitasi di dalam teks.</li></ol></div>
+</section>
+
+    </main>
+    <footer class="foot">
+      <span><b>Cyber Security (IMT01307502)</b> · Informatika, Universitas Ciputra · Topik: Anatomi Serangan SSL Stripping</span>
+      <span>Kelompok: Jefferson Jap (NIM 0706012410072) · Vincent (NIM 0706012410032) · Rifki Indra Nugroho (NIM 0706012410033) · Precious Nathan (NIM 0706012410027)</span>
+      <span><a href="../index.html">Hub proyek</a> · <a href="../udp-flood/index.html">UDP Flood &amp; Port Exhaustion</a> · <a href="../mitigasi-ddos-berlapis/index.html">Mitigasi DDoS Berlapis</a></span>
+    </footer>
+  </div>
+</div>
+<nav class="bottomnav" aria-label="Navigasi komponen">
+  <a href="#pengantar" data-nav="pengantar"><svg class="ic"><use href="#i-intro"/></svg>Pengantar</a>
+  <a href="#konsep" data-nav="konsep"><svg class="ic"><use href="#i-concept"/></svg>Konsep</a>
+  <a href="#proses" data-nav="proses"><svg class="ic"><use href="#i-steps"/></svg>Proses</a>
+  <a href="#simulasi" data-nav="simulasi"><svg class="ic"><use href="#i-sim"/></svg>Simulasi</a>
+  <a href="#pertahanan" data-nav="pertahanan"><svg class="ic"><use href="#i-shield"/></svg>Pertahanan</a>
+  <a href="#referensi" data-nav="referensi"><svg class="ic"><use href="#i-refs"/></svg>Referensi</a>
+</nav>
+<button class="roundbtn" id="toTop" aria-label="Kembali ke atas"><svg class="ic"><use href="#i-up"/></svg></button>
+<script src="../assets/ehe.js"></script>
+<script>
+(function(){
+"use strict";
+const {$,$$,clamp,icon,C,themeHooks,stepper,quiz,reduce}=EHE;
+const NS='http://www.w3.org/2000/svg';
+const el=$('#sim3');
+const SCEN={cafe:{vector:'evil',entry:'typed',returning:'0',siteHsts:false,preload:false},arp:{vector:'arp',entry:'typed',returning:'0',siteHsts:false,preload:false},
+  bookmark:{vector:'evil',entry:'bookmark',returning:'0',siteHsts:false,preload:false},hsts:{vector:'evil',entry:'typed',returning:'1',siteHsts:true,preload:false},
+  hstsfirst:{vector:'evil',entry:'typed',returning:'0',siteHsts:true,preload:false},preload:{vector:'evil',entry:'typed',returning:'0',siteHsts:true,preload:true}};
+const SNAME={cafe:'Wi-Fi kafe, Evil Twin',arp:'LAN kantor, ARP poisoning',bookmark:'Bookmark https://',hsts:'Situs ber-HSTS, kunjungan ulang',hstsfirst:'Situs ber-HSTS, kunjungan pertama',preload:'Situs di HSTS preload list'};
+let scen='cafe',P=Object.assign({user:'budi',pass:'Kucing123'},SCEN.cafe),D={};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- attack path engine ---------- */
+function path(p,d){
+  const hsts=p.siteHsts||!!d.hsts,pre=p.preload||!!d.preload,ret=p.returning==='1';
+  const known=pre||(hsts&&ret);const first=(p.entry==='bookmark'||known)?'https':'http';
+  const via=p.vector==='evil'?'hotspot palsu "Kafe_Gratis" (Evil Twin)':'ARP poisoning di LAN';
+  const cred='username = '+p.user+'\npassword = '+p.pass;
+  const S=[];const res={exposed:false,stopped:null,risks:[]};
+  S.push({t:'Persiapan: penyerang di tengah',c:'Korban tersambung ke jaringan, dan penyerang sudah menjadi perantara lewat '+via+'. '+(p.entry==='bookmark'?'Korban membuka bookmark https://bank.contoh.':'Korban mengetik bank.contoh tanpa "https://".')+(known?' Browser sudah mengenal aturan HSTS situs ini'+(pre?' dari preload list.':' dari kunjungan sebelumnya.'):''),a:[],u:'typing',l:'—'});
+  if(d.vpn){S.push({t:'VPN membungkus semua trafik',c:'Sebelum keluar dari perangkat, semua trafik masuk ke terowongan VPN terenkripsi menuju server VPN. Penyerang di jaringan lokal hanya melihat data acak dan tidak bisa mencegat permintaan HTTP apa pun.',a:[['K','S','https','Terowongan VPN ke internet']],u:p.entry==='bookmark'||known?'https':'typing',l:'Terowongan VPN terenkripsi\n(data acak, tidak bisa dibaca)',cls:'safe'});
+    S.push({t:'Login aman',c:'Login sampai ke server tanpa bisa dibaca penyerang di jaringan lokal.',a:[['K','S','https','POST login (di dalam VPN)'],['S','K','https','Login sukses']],u:'https',l:'Tidak ada data yang terbaca',cls:'safe'});
+    res.stopped='VPN di perangkat korban';if(!hsts&&!pre)res.risks.push('VPN hanya melindungi jalur sampai server VPN. Tanpa HSTS, situs tetap rentan bagi pengguna lain yang tidak memakai VPN.');return {S,res};}
+  if(first==='http'){
+    S.push({t:'Intersepsi HTTP initial',c:'Browser mengirim permintaan pertama lewat HTTP polos. Penyerang mencegatnya sebelum server sempat mengalihkan ke HTTPS.'+(hsts&&!known?' Situs sebenarnya memasang HSTS, tetapi browser belum pernah menerima aturannya: inilah celah kunjungan pertama.':''),a:[['K','P','http','GET http://bank.contoh']],u:'typing',l:'GET http://bank.contoh  (terbaca)'});
+    S.push({t:'Dual-connection proxy: sisi server',c:'Penyerang membuka HTTPS yang sah ke server asli. Di mata server, ini pengunjung biasa'+(hsts?'; header HSTS dari server diterima penyerang, bukan oleh browser korban.':'.'),a:[['P','S','https','GET https://bank.contoh'],['S','P','https','Halaman login (terenkripsi)']],u:'typing',l:'Halaman login dari server\n(penyerang memegang sambungan HTTPS ini)'});
+    S.push({t:'Dual-connection proxy: sisi korban',c:'Penyerang mengganti semua tautan https:// menjadi http:// dan mengirim halaman login lewat HTTP polos. Halaman tampak sama; hanya gembok yang hilang.'+(ret&&!d.cookie?' Browser korban ikut mengirim cookie sesi lama lewat HTTP.':ret&&d.cookie?' Cookie sesi lama ber-atribut Secure tidak ikut terkirim lewat HTTP.':''),a:[['P','K','http','Halaman login (https → http)']],u:'http',l:'Halaman login versi HTTP'+(ret&&!d.cookie?'\ncookie: PHPSESSID=xyz123abc987':''),cls:ret&&!d.cookie?'hit':''});
+    if(d.check){S.push({t:'Korban berhenti',c:'Korban memperhatikan alamat http:// dan tulisan "Tidak aman" di halaman yang biasanya bergembok, lalu tidak mengetik password. Serangan gagal, tetapi hanya karena kewaspadaan manusia.',a:[['K','K','note','Korban melihat "Tidak aman" dan berhenti']],u:'http',l:ret&&!d.cookie?'cookie: PHPSESSID=xyz123abc987':'Tidak ada password yang terbaca',cls:ret&&!d.cookie?'hit':'safe'});
+      res.stopped='Kewaspadaan pengguna (memeriksa gembok)';res.exposed=ret&&!d.cookie;res.risks.push('Bergantung pada manusia: satu kali lengah, password bocor. Pasang HSTS dan preload di server.');if(res.exposed)res.risks.unshift('Cookie sesi lama tetap bocor karena tidak ber-atribut Secure.');return {S,res};}
+    S.push({t:'Pencurian kredensial',c:'Korban mengisi formulir dan menekan "Masuk". Data terkirim lewat HTTP yang sudah diturunkan, sehingga penyerang membacanya sebagai teks polos.',a:[['K','P','http','POST user='+p.user+' & pass='+p.pass]],u:'http',l:cred,cls:'hit'});
+    S.push({t:'Penyamaran sempurna',c:'Penyerang meneruskan login ke server lewat HTTPS. Server menjawab "login sukses", korban masuk seperti biasa, dan penyerang ikut memegang cookie sesi baru. Atribut cookie tidak mencegah ini, karena penyerang adalah ujung koneksi HTTPS ke server.',a:[['P','S','https','Login diteruskan'],['S','P','https','Login sukses + cookie sesi'],['P','K','http','Halaman akun (HTTP)']],u:'http',l:cred+'\n+ cookie sesi baru',cls:'hit'});
+    res.exposed=true;res.stopped=null;
+    if(hsts&&!pre)res.risks.push('Situs sudah memasang HSTS, tetapi korban belum pernah berkunjung: celah kunjungan pertama. Tutup dengan HSTS preload.');
+    else res.risks.push('Tanpa HSTS, permintaan HTTP pertama selalu bisa dicegat.');
+    if(d.cookie)res.risks.push('Atribut cookie aktif, tetapi tidak mencegah password diketik di halaman HTTP palsu.');
+    return {S,res};}
+  // first request is HTTPS
+  if(p.entry!=='bookmark')S.push({t:'Browser menaikkan sendiri ke HTTPS',c:'Sebelum ada satu paket pun keluar, browser mengubah http:// menjadi https:// karena aturan HSTS'+(pre?' dari preload list':'')+'. Tidak ada permintaan HTTP polos yang bisa dicegat.',a:[['K','K','note','http:// diubah ke https:// di dalam browser']],u:'https',l:'— belum ada yang lewat',cls:'safe'});
+  S.push({t:'TLS langsung ke server asli',c:'Browser memulai koneksi TLS. Paket tetap lewat perangkat penyerang, tetapi isinya terenkripsi.',a:[['K','S','https','TLS langsung ke server asli']],u:'https',l:'17 03 03 a9 f2 4c 9e …\n(data acak)',cls:'safe'});
+  if(known){S.push({t:'Upaya penurunan ditolak',c:'Penyerang menyodorkan http:// atau sertifikat palsu. Browser menolak: HSTS melarang HTTP untuk situs ini, dan peringatan sertifikat tidak bisa dilewati pengguna.',a:[['P','K','blocked','http:// atau sertifikat palsu · ditolak']],u:'https',l:'(data acak)',cls:'safe'});
+    res.stopped=pre?'HSTS preload (browser menolak HTTP sejak kunjungan pertama)':'Header HSTS yang sudah tersimpan di browser';}
+  else{S.push({t:'Peringatan sertifikat',c:'Penyerang mencoba menyodorkan sertifikat palsu. Karena situs tidak memasang HSTS, browser menampilkan peringatan yang masih bisa diklik "lanjutkan". '+(d.check?'Korban yang waspada menutup halaman.':'Dalam simulasi ini korban tidak melanjutkan.'),a:[['P','K','blocked','Sertifikat palsu · peringatan muncul']],u:'https',l:'(data acak)',cls:'safe'});
+    res.stopped='Bookmark https:// (permintaan pertama sudah terenkripsi)';res.risks.push('Tanpa HSTS, peringatan sertifikat bisa diklik-lewati, dan tautan http:// di halaman lain masih bisa di-strip.');}
+  S.push({t:'Login aman',c:'Username dan password terkirim di dalam terowongan TLS ke server asli. Penyerang tidak mendapat apa pun yang bisa dibaca.',a:[['K','S','https','POST login (terenkripsi)'],['S','K','https','Login sukses']],u:'https',l:'Tidak ada data yang terbaca',cls:'safe'});
+  if(hsts&&!pre&&!ret)res.risks.push('Kunjungan pertama ke situs ini lewat ketikan masih rentan tanpa preload.');
+  return {S,res};}
+
+/* ---------- sequence diagram ---------- */
+const svg=$('[data-seq]',el),X={K:115,P:400,S:685};
+function mk(tag,a,parent,text){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(text!=null)e.textContent=text;parent&&parent.appendChild(e);return e;}
+function lockGlyph(g,x,y,col,open){mk('rect',{x:x-5,y:y-1,width:10,height:8,rx:1.6,fill:col},g);mk('path',{d:open?'M'+(x-3)+' '+(y-1)+'v-3a3 3 0 0 1 5.6-1.5':'M'+(x-3)+' '+(y-1)+'v-3a3 3 0 0 1 6 0v3',fill:'none',stroke:col,'stroke-width':1.6},g);}
+function head(k,title,sub,kind,H){const g=mk('g',{},svg);const inv=kind==='atk';
+  mk('rect',{x:X[k]-82,y:8,width:164,height:56,rx:20,fill:inv?C.strong:C.surface,stroke:inv?C.strong:C.light,'stroke-width':1.5},g);
+  const ix=X[k]-58,iy=36,col=inv?C.bg:C.strong;
+  if(kind==='laptop'){mk('rect',{x:ix-10,y:iy-10,width:20,height:13,rx:2,fill:'none',stroke:col,'stroke-width':1.8},g);mk('path',{d:'M'+(ix-14)+' '+(iy+6)+'h28',stroke:col,'stroke-width':2,'stroke-linecap':'round'},g);}
+  else if(kind==='atk'){mk('path',{d:'M'+(ix-12)+' '+iy+'q12-12 24 0q-12 12-24 0z',fill:'none',stroke:col,'stroke-width':1.8},g);mk('circle',{cx:ix,cy:iy,r:3.5,fill:col},g);}
+  else{mk('path',{d:'M'+(ix-12)+' '+(iy-4)+'l12-8 12 8z',fill:col},g);for(let j=0;j<3;j++)mk('rect',{x:ix-9+j*7,y:iy-3,width:3.2,height:10,fill:col},g);mk('rect',{x:ix-12,y:iy+7,width:24,height:2.6,fill:col},g);}
+  mk('text',{x:X[k]+10,y:33,'text-anchor':'middle','font-size':15,'font-weight':700,fill:inv?C.bg:C.ink,'font-family':'system-ui,sans-serif'},g,title);
+  mk('text',{x:X[k]+10,y:51,'text-anchor':'middle','font-size':11.5,fill:inv?C.bg:C.muted,'font-family':'system-ui,sans-serif'},g,sub);
+  mk('line',{x1:X[k],y1:66,x2:X[k],y2:H-8,stroke:C.light,'stroke-width':2,'stroke-dasharray':'2 6','stroke-linecap':'round'},svg);}
+function label(g,x,y,txt,col,lock){const w=Math.min(360,txt.length*7.6+(lock?36:18));mk('rect',{x:x-w/2,y:y-13,width:w,height:24,rx:12,fill:C.surface,stroke:col,'stroke-width':1.2},g);if(lock)lockGlyph(g,x-w/2+16,y-1,col,lock==='open');
+  mk('text',{x:x+(lock?9:0),y:y+1,'text-anchor':'middle','font-size':13.5,'font-weight':600,fill:col,'dominant-baseline':'middle','font-family':'system-ui,sans-serif'},g,txt);}
+function drawSeq(S,i){let rows=0;for(let k=0;k<=i;k++)rows+=S[k].a.length;const H=108+Math.max(rows,1)*54+20;svg.setAttribute('viewBox','0 0 800 '+H);svg.innerHTML='';
+  head('K','Korban','browser','laptop',H);head('P','Penyerang','di tengah (MitM)','atk',H);head('S','Server asli','bank.contoh','bank',H);let y=110;
+  for(let k=0;k<=i;k++)for(const [f,t,kind,txt] of S[k].a){const isNew=k===i&&!reduce;const g=mk('g',{class:isNew?'seq-new':''},svg);
+    if(kind==='note'){mk('rect',{x:X.K-92,y:y-17,width:310,height:32,rx:16,fill:C.faint,stroke:C.mid},g);mk('text',{x:X.K+63,y:y,'text-anchor':'middle','font-size':13,'font-weight':700,fill:C.ink,'dominant-baseline':'middle','font-family':'system-ui,sans-serif'},g,txt);y+=54;continue;}
+    const col=kind==='https'?C.strong:C.mid,x1=X[f],x2=X[t],dir=x2>x1?1:-1,len=Math.abs(x2-x1);
+    const ln=mk('line',{x1:x1+dir*4,y1:y,x2:x2-dir*7,y2:y,stroke:col,'stroke-width':kind==='https'?3.2:2.4,'stroke-linecap':'round'},g);
+    if(kind==='https'){if(isNew){ln.setAttribute('class','draw');ln.setAttribute('stroke-dasharray',len+' '+len);ln.style.setProperty('--len',len);}}else ln.setAttribute('stroke-dasharray','8 7');
+    if(kind==='blocked'){const bx=x2-dir*30;mk('path',{d:'M'+(bx-8)+' '+(y-8)+'l16 16M'+(bx+8)+' '+(y-8)+'l-16 16',stroke:C.strong,'stroke-width':3.2,'stroke-linecap':'round'},g);}
+    else mk('path',{d:'M'+(x2-dir*2)+' '+y+'l'+(-11*dir)+' -6.5v13z',fill:col},g);
+    label(g,(x1+x2)/2,y-17,txt,col,kind==='https'?'closed':'open');
+    if(kind==='https'&&Math.min(x1,x2)<X.P&&Math.max(x1,x2)>X.P)mk('text',{x:X.P,y:y+18,'text-anchor':'middle','font-size':11.5,fill:C.muted,'font-family':'system-ui,sans-serif'},g,'lewat penyerang, tetapi terenkripsi');
+    y+=54;}}
+
+/* ---------- rendering ---------- */
+let cur=null;
+function urlHTML(u){return u==='https'?icon('i-lock','')+'<span class="u"><b>https://</b>bank.contoh/login</span><span class="chip good">Aman</span>':u==='http'?'<span class="chip bad">Tidak aman</span><span class="u"><span class="dim">http://</span>bank.contoh/login</span>':'<span class="u">bank.contoh<span class="dim">|</span></span><span class="dim" style="font-family:var(--sans);font-size:.78rem">mengetik</span>';}
+function show(i){const S=cur.S;const st=S[i];$('[data-st-title]',el).textContent=st.t;$('[data-st-text]',el).textContent=st.c;
+  $('[data-url]',el).innerHTML=urlHTML(st.u);
+  $('[data-page-body]',el).innerHTML=st.u==='typing'?'<p class="muted" style="margin:0">Memuat…</p>':'<h5>Masuk ke bank.contoh</h5><div class="fake-in">'+esc(P.user)+'</div><div class="fake-in">'+'•'.repeat(Math.min(P.pass.length,16))+'</div><div class="fake-btn">Masuk</div>';
+  const loot=$('[data-loot]',el);loot.textContent=st.l;loot.className='loot'+(st.cls?' '+st.cls:'');drawSeq(S,i);
+  const box=$('[data-result]',el);
+  if(i<S.length-1){box.innerHTML='<div class="lbl2"><span class="n">5</span>Hasil &amp; evaluasi</div><p class="muted">Hasil muncul di tahap terakhir ('+(i+1)+' dari '+S.length+').</p>';return;}
+  const r=cur.res;box.innerHTML='<div class="lbl2"><span class="n">5</span>Hasil · '+SNAME[scen]+'</div><div class="kpis"><div class="kpi'+(r.exposed?' alert':'')+'"><div class="v">'+(r.exposed?'Terekspos':'Aman')+'</div><div class="l">Password / cookie</div></div><div class="kpi"><div class="v" style="font-size:1.05rem">'+(r.stopped||'Tidak ada')+'</div><div class="l">Yang menghentikan serangan</div></div></div>'+
+    (r.risks.length?'<div class="lbl2" style="margin-top:14px">Risiko yang tersisa</div><ul class="fbl">'+r.risks.map(x=>'<li class="part"><span class="badge">'+icon('i-alert')+'</span><span>'+x+'</span></li>').join('')+'</ul>':'');}
+const player=stepper({count:()=>cur?cur.S.length:1,onStep:show,prev:$('[data-act=prev]',el),next:$('[data-act=next]',el),play:$('[data-act=play]',el),label:$('[data-label]',el)});
+function rebuild(keep){cur=path(P,D);const i=keep?Math.min(player.i,cur.S.length-1):0;player.go(i);}
+
+/* ---------- inputs ---------- */
+function syncInputs(){$$('[data-p]',el).forEach(i=>{i.value=P[i.dataset.p];});}
+$$('[data-p]',el).forEach(i=>i.addEventListener(i.tagName==='SELECT'?'change':'input',()=>{P[i.dataset.p]=i.value;if(i.tagName==='SELECT'){scen='custom';$$('[data-scen]',el).forEach(b=>b.setAttribute('aria-pressed','false'));SNAME.custom='Skenario kustom';}rebuild(i.tagName!=='SELECT');}));
+$$('[data-scen]',el).forEach(b=>b.addEventListener('click',()=>{scen=b.dataset.scen;Object.assign(P,SCEN[scen]);$$('[data-scen]',el).forEach(x=>x.setAttribute('aria-pressed',x===b));syncInputs();$('[data-eval]',el).innerHTML='';player.stop();rebuild();}));
+$$('[data-d]',el).forEach(c=>c.addEventListener('change',()=>{D[c.dataset.d]=c.checked;c.closest('.chk').classList.toggle('on',c.checked);player.stop();rebuild();}));
+$('[data-act=reset]',el).addEventListener('click',()=>{scen='cafe';P=Object.assign({user:'budi',pass:'Kucing123'},SCEN.cafe);D={};$$('[data-d]',el).forEach(c=>{c.checked=false;c.closest('.chk').classList.remove('on');});$$('[data-scen]',el).forEach(x=>x.setAttribute('aria-pressed',x.dataset.scen==='cafe'));syncInputs();$('[data-eval]',el).innerHTML='';player.stop();rebuild();});
+
+/* ---------- evaluation ---------- */
+const DN={hsts:'Header HSTS di server',preload:'HSTS preload',cookie:'Atribut cookie',vpn:'VPN',check:'Memeriksa gembok'};
+function dfb(k,base,after){const ret=P.returning==='1';
+  switch(k){
+    case 'hsts':return (ret||P.preload||D.preload)?['good','Browser yang pernah berkunjung menolak HTTP polos sebelum paket keluar.']:['part','Belum melindungi kunjungan pertama: browser belum pernah menerima header ini. Tambahkan preload.'];
+    case 'preload':return ['good','Browser sudah tahu situs ini wajib HTTPS bahkan sebelum kunjungan pertama, sehingga celah bootstrap tertutup.'];
+    case 'cookie':return ['part',ret?'Cookie sesi lama ber-Secure tidak ikut terkirim lewat HTTP, tetapi password yang diketik di halaman palsu tetap terbaca.':'Tidak mencegah pencurian password saat SSL Stripping. Tetap penting untuk menangkal XSS (HttpOnly) dan CSRF (SameSite).'];
+    case 'vpn':return ['good','Trafik dibungkus terowongan terenkripsi sebelum keluar dari perangkat, jadi penyerang di jaringan lokal tidak bisa mencegat apa pun.'];
+    case 'check':return ['part','Membantu jika pengguna benar-benar waspada, tetapi bergantung pada manusia. Satu kali lengah, password bocor.'];}}
+$('[data-act=evaluate]',el).addEventListener('click',()=>{
+  const b=path(P,{}).res,a=path(P,D).res,keys=Object.keys(D).filter(k=>D[k]);
+  const score=a.exposed?0:Math.max(40,100-a.risks.length*20-(a.stopped&&a.stopped.startsWith('Kewaspadaan')?20:0));
+  const col=(t,r)=>'<div class="col"><h5>'+t+'</h5><div class="row"><span>Password / cookie</span><b>'+(r.exposed?'Terekspos':'Aman')+'</b></div><div class="row"><span>Dihentikan oleh</span><b style="font-size:.85rem;text-align:right">'+(r.stopped||'—')+'</b></div><div class="row"><span>Risiko tersisa</span><b>'+r.risks.length+'</b></div></div>';
+  $('[data-eval]',el).innerHTML='<div class="cmp">'+col('Tanpa pertahanan',b)+col('Dengan pilihan Anda',a)+'</div><div class="verdict"><div class="score-ring" style="--p:'+score+'"><span>'+score+'</span></div><div><h4>'+(a.exposed?'Kredensial masih bocor':score>=90?'Terlindungi dengan baik':'Aman, dengan catatan')+'</h4><p>Skor 0 jika data bocor; dikurangi untuk setiap risiko yang tersisa dan jika perlindungan hanya bergantung pada kewaspadaan pengguna.</p></div></div>'+
+    '<div class="lbl2" style="margin-top:18px">Umpan balik per pilihan</div><ul class="fbl">'+(keys.length?keys.map(k=>{const [t,x]=dfb(k);return '<li class="'+t+'"><span class="badge">'+icon(t==='good'?'i-check':'i-minus')+'</span><span><b>'+DN[k]+'.</b> '+x+'</span></li>';}).join(''):'<li class="bad"><span class="badge">'+icon('i-x')+'</span><span>Belum ada pertahanan yang dipilih.</span></li>')+'</ul>';});
+
+themeHooks.push(()=>player.render());
+syncInputs();rebuild();
+
+/* ---------- spot the difference ---------- */
+const HOT={scheme:'Alamat diawali http://, bukan https://.',warn:'Browser menandai halaman "Tidak aman".',lock:'Ikon gembok hilang dari address bar.'};
+const found=new Set();
+$$('[data-hot]').forEach(h=>h.addEventListener('click',()=>{const k=h.dataset.hot;const out=$('[data-spot]');
+  if(HOT[k]){found.add(k);h.classList.add('found');out.innerHTML='<strong>Ditemukan '+found.size+' dari 3.</strong> '+HOT[k]+(found.size===3?' Semua tanda bahaya ditemukan. Tampilan halamannya sendiri identik, jadi hanya address bar yang membedakan.':'');}
+  else out.innerHTML='<strong>Ditemukan '+found.size+' dari 3.</strong> Bagian ini sama persis di kedua halaman. Penyerang menyalin tampilan asli; perbedaannya ada di address bar.';}));
+
+/* ---------- HSTS header builder ---------- */
+function build(){const age=+$('[data-b=age]').value,sub=$('[data-b=sub]').checked,pre=$('[data-b=pre]').checked;
+  const v='max-age='+age+(sub?'; includeSubDomains':'')+(pre?'; preload':'');
+  $('[data-hdr]').textContent='Strict-Transport-Security: '+v;$('[data-ngx]').textContent='add_header Strict-Transport-Security "'+v+'" always;';
+  const n=[];const days=age>=86400?Math.round(age/86400)+' hari':Math.round(age/60)+' menit';
+  n.push(age===0?['bad','max-age=0 memerintahkan browser menghapus aturan HSTS situs ini. Gunakan hanya untuk mencabut HSTS.']:age<31536000?['part','max-age '+age+' detik (±'+days+') tergolong pendek: aturan cepat kedaluwarsa dan celah kunjungan berikutnya terbuka lagi. Nilai yang umum dipakai adalah minimal 31536000 (1 tahun).']:['good','max-age '+age+' detik (±'+days+'): browser mengingat aturan HTTPS-only selama itu.']);
+  n.push(sub?['good','includeSubDomains: aturan juga berlaku untuk semua subdomain, misalnya login.bank.contoh.']:['part','Tanpa includeSubDomains, subdomain yang lupa diamankan masih bisa diserang.']);
+  if(pre){const okp=age>=31536000&&sub;n.push(okp?['good','preload: memenuhi syarat dasar untuk didaftarkan di hstspreload.org. Ingat, keputusan ini sulit dibatalkan; pastikan semua subdomain siap HTTPS.']:['bad','preload belum memenuhi syarat: dibutuhkan max-age minimal 31536000 dan includeSubDomains.']);}
+  else n.push(['part','Tanpa preload, kunjungan pertama masih rentan (bootstrap MITM).']);
+  $('[data-bnotes]').innerHTML=n.map(([t,x])=>'<li class="'+t+'"><span class="badge">'+icon(t==='good'?'i-check':t==='part'?'i-minus':'i-x')+'</span><span>'+x+'</span></li>').join('');}
+$$('[data-b]').forEach(i=>i.addEventListener('change',()=>{if(i.type==='checkbox')i.closest('.chk').classList.toggle('on',i.checked);build();}));
+$$('[data-b][type=checkbox]').forEach(i=>i.closest('.chk').classList.toggle('on',i.checked));build();
+
+/* ---------- quiz ---------- */
+quiz($('#quiz3'),[
+ ['Pada SSL Stripping, sambungan antara penyerang dan server asli memakai…',['HTTP polos','HTTPS','Telnet','Tidak ada sambungan'],1,'Dual-connection proxy: HTTPS ke server asli, HTTP polos ke browser korban.'],
+ ['Titik lemah yang dimanfaatkan SSL Stripping adalah…',['Algoritma AES yang lemah','Permintaan HTTP pertama sebelum dialihkan ke HTTPS','Password yang terlalu panjang','Port 443 yang tertutup'],1,'Penyerang mencegah HTTPS dimulai, bukan memecahkannya.'],
+ ['Header apa yang membuat browser menolak HTTP polos untuk sebuah situs?',['Set-Cookie','Strict-Transport-Security','Content-Length','User-Agent'],1,'HSTS memerintahkan browser hanya memakai HTTPS.'],
+ ['max-age=31536000 berarti browser mengingat aturan selama…',['1 jam','1 hari','30 hari','1 tahun'],3,'31.536.000 detik = 365 hari.'],
+ ['Mengapa situs ber-HSTS masih bisa diserang pada kunjungan pertama?',['Karena HSTS hanya untuk HTTP','Karena browser belum pernah menerima header HSTS dari situs itu','Karena preload menonaktifkan HSTS','Karena cookie tidak Secure'],1,'Header HSTS hanya diterima lewat HTTPS; celah ini ditutup preload list.'],
+ ['Apakah atribut cookie Secure mencegah password dicuri saat SSL Stripping?',['Ya, sepenuhnya','Tidak; ia mencegah cookie lama terkirim lewat HTTP, tetapi password diketik di halaman palsu','Ya, jika ditambah HttpOnly','Ya, jika SameSite=Lax'],1,'Penangkal utama tetap HSTS; atribut cookie melindungi cookie dan menutup celah XSS/CSRF.']],$('[data-scorebar]'));
+})();
+</script>
+</body>
+</html>
