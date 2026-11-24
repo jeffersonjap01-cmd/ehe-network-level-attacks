@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strategi Mitigasi DDoS Berlapis · Simulator EHE</title>
+<meta name="description" content="Website pembelajaran interaktif dan simulator pertahanan DDoS berlapis: Rate Limiting, WAF &amp; JS Challenge, BGP Anycast Scrubbing, SYN Cookies, IDS/IPS, dan pemantauan SOC.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231d4e89'/%3E%3Cpath d='M16 6 7 11l9 5 9-5zM7 16l9 5 9-5M7 21l9 5 9-5' stroke='%23dde9f7' stroke-width='2' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/ehe.css">
+</head>
+<body data-site="Simulator Pertahanan DDoS Berlapis">
+<a class="skip" href="#main">Lompat ke konten</a>
+<div id="progress" aria-hidden="true"></div>
+<div class="app">
+  <aside class="side" aria-label="Navigasi komponen">
+    <a class="logo" href="../index.html" aria-label="Kembali ke hub proyek"><svg viewBox="0 0 44 30" aria-hidden="true"><path d="M3 11c6-6 12-6 19 0s13 6 19 0M3 20c6-6 12-6 19 0s13 6 19 0" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg>EHE</a>
+    <a class="navbtn" href="#pengantar" data-nav="pengantar"><span class="no">1</span><svg class="ic"><use href="#i-intro"/></svg>Pengantar</a>
+    <a class="navbtn" href="#konsep" data-nav="konsep"><span class="no">2</span><svg class="ic"><use href="#i-concept"/></svg>Konsep</a>
+    <a class="navbtn" href="#proses" data-nav="proses"><span class="no">3</span><svg class="ic"><use href="#i-steps"/></svg>Proses</a>
+    <a class="navbtn" href="#simulasi" data-nav="simulasi"><span class="no">4</span><svg class="ic"><use href="#i-sim"/></svg>Simulasi</a>
+    <a class="navbtn" href="#pertahanan" data-nav="pertahanan"><span class="no">5</span><svg class="ic"><use href="#i-shield"/></svg>Pertahanan</a>
+    <a class="navbtn" href="#referensi" data-nav="referensi"><span class="no">6</span><svg class="ic"><use href="#i-refs"/></svg>Referensi</a>
+  </aside>
+  <div class="content">
+    <div class="topbar">
+      <div class="crumb"><a href="../index.html">Hub</a><svg class="ic sm"><use href="#i-chev"/></svg><span>Mitigasi DDoS Berlapis</span><svg class="ic sm"><use href="#i-chev"/></svg><b id="crumbHere"></b></div>
+      <div class="bar-right">
+        <details class="menu"><summary><svg class="ic sm"><use href="#i-grid"/></svg>Topik lain<svg class="ic sm"><use href="#i-down"/></svg></summary>
+          <div class="drop">
+            <a href="../index.html"><svg class="ic"><use href="#i-home"/></svg><span><b>Hub proyek</b>Semua topik dan anggota</span></a>
+            <a href="../udp-flood/index.html"><svg class="ic"><use href="#i-wave"/></svg><span><b>UDP Flood &amp; Port Exhaustion</b>Simulator serangan volumetrik</span></a>
+            <a href="../ssl-stripping/index.html"><svg class="ic"><use href="#i-unlock"/></svg><span><b>SSL Stripping</b>Simulator MitM</span></a>
+          </div></details>
+        <button class="roundbtn" id="themeBtn" aria-label="Ganti mode terang atau gelap"><svg class="ic"><use href="#i-contrast"/></svg></button>
+      </div>
+    </div>
+    <main id="main" tabindex="-1">
+
+<!-- ================= 1. PENGANTAR ================= -->
+<section class="page" data-page="pengantar" data-title="Pengantar Topik" aria-labelledby="h2-1">
+  <div class="bento">
+    <div class="s8"><header class="hero">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-layers" width="600" height="400"/></svg>
+      <div class="hero-in">
+        <span class="eyebrow">Komponen 1 · Pengantar Topik</span>
+        <h1 id="h2-1">Mitigasi DDoS</h1>
+        <div class="sub">Strategi berlapis</div>
+        <span class="k">Intinya</span>
+        <p class="lead">Tidak ada satu alat yang bisa menahan semua jenis DDoS. Pertahanan disusun berlapis: BGP Anycast Scrubbing di tepi internet, WAF &amp; JS Challenge di gerbang aplikasi, dan Rate Limiting di web server <a class="cite" href="#ref-1">[1]</a>.</p>
+        <a class="pill" href="#simulasi">Coba jadi pembela <svg class="ic sm"><use href="#i-arrow"/></svg></a>
+      </div></header></div>
+    <div class="s4 stack">
+      <div class="tile stat"><svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-night" width="600" height="400"/></svg>
+        <span class="big">3 lapis</span><span class="lbl">dari tepi internet sampai web server</span><span class="chipw"><svg class="ic sm"><use href="#i-shield"/></svg>Defense-in-depth</span></div>
+      <nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+        <li><a href="#m1-def">Definisi</a></li><li><a href="#m1-tujuan">Tujuan mempelajari</a></li><li><a href="#m1-relevansi">Relevansi keamanan siber</a></li><li><a href="#m1-etika">Etika</a></li></ol></nav>
+    </div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="m1-def"><div class="chead"><span class="no">01</span><h2>Definisi</h2></div><div class="body">
+      <p class="lede">Mitigasi DDoS berlapis adalah strategi menumpuk beberapa kontrol pertahanan, sehingga serangan yang lolos dari satu lapisan ditangkap lapisan berikutnya.</p>
+      <p><strong>DDoS</strong> (Distributed Denial of Service) adalah serangan dari ribuan perangkat sekaligus yang membuat layanan tidak bisa dipakai pengguna sah <a class="cite" href="#ref-1">[1]</a>. Prinsip pertahanannya disebut <strong>defense-in-depth</strong>: menggabungkan kontrol di perimeter, jaringan, host, aplikasi, dan data, tanpa satu titik gagal tunggal <a class="cite" href="#ref-3">[3]</a>. Untuk DDoS, tiga lapisan utamanya adalah:</p>
+      <div class="defs">
+        <div><h4>Rate Limiting</h4><p>Membatasi ambang batas permintaan per detik per alamat IP pada web server seperti Nginx <a class="cite" href="#ref-1">[1]</a>.</p></div>
+        <div><h4>WAF &amp; JS Challenge</h4><p>Tantangan skrip JavaScript atau CAPTCHA untuk memblokir bot otomatis <a class="cite" href="#ref-1">[1]</a>.</p></div>
+        <div><h4>BGP Anycast Scrubbing</h4><p>Membelokkan trafik berukuran Tbps ke pusat pembersihan cloud publik global <a class="cite" href="#ref-1">[1]</a>.</p></div>
+      </div>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Keamanan konser besar</span><p>Ada penyaringan di jalan raya sebelum lokasi, tempat rombongan mencurigakan dialihkan (scrubbing). Ada pemeriksaan tiket di gerbang, sehingga hanya manusia dengan tiket asli yang masuk (WAF dan CAPTCHA). Lalu ada batas keluar-masuk per orang, agar satu tiket tidak dipakai masuk seratus kali per menit (rate limiting).</p></figure>
+    </div></div>
+    <div class="chapter" id="m1-tujuan"><div class="chead"><span class="no">02</span><h2>Tujuan mempelajari</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Mencocokkan</strong> setiap jenis DDoS dengan pertahanan yang tepat, karena satuan dan sasarannya berbeda.</li>
+        <li><strong>Memahami batas</strong> setiap lapisan: apa yang ditahannya, apa yang lolos, dan siapa yang ikut terblokir.</li>
+        <li><strong>Menimbang biaya dan dampak</strong> ke pengguna asli, bukan sekadar "memblokir sebanyak-banyaknya".</li>
+        <li><strong>Menjawab</strong> mengapa memblokir IP di firewall lokal tidak efektif melawan DDoS volumetrik.</li>
+      </ul>
+    </div></div>
+    <div class="chapter" id="m1-relevansi"><div class="chead"><span class="no">03</span><h2>Relevansi keamanan siber</h2></div><div class="body">
+      <p>DDoS menyerang <strong>ketersediaan</strong> (availability), salah satu pilar CIA Triad. Dampaknya nyata: transaksi berhenti, penalti SLA, biaya mitigasi darurat, dan risiko DDoS dipakai sebagai tabir asap untuk penyusupan senyap <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-10">[10]</a>. Serangan terbesar kini berukuran terabit per detik, jauh melebihi kapasitas jaringan satu organisasi <a class="cite" href="#ref-9">[9]</a>.</p>
+    </div></div>
+    <div class="chapter" id="m1-etika"><div class="chead"><span class="no">04</span><h2>Etika</h2></div><div class="body">
+      <div class="ethics"><svg class="ic"><use href="#i-scale"/></svg><p>Simulator ini hanya model visual dengan angka buatan. Teknik serangan hanya boleh dipelajari di lab yang diizinkan <a class="cite" href="#ref-4">[4]</a>. Mengganggu sistem elektronik orang lain tanpa hak adalah tindak pidana menurut UU ITE <a class="cite" href="#ref-13">[13]</a><a class="cite" href="#ref-14">[14]</a>.</p></div>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>Berlapis berarti defense-in-depth: tidak ada satu alat yang cukup.</li>
+    <li>Tiga lapisan utama: Rate Limiting, WAF &amp; JS Challenge, BGP Anycast Scrubbing.</li>
+    <li>DDoS menyerang ketersediaan dan bisa menjadi tabir asap.</li></ol></div>
+  <nav class="pager" aria-label="Komponen berikutnya"><a class="nx" href="#konsep"><span><small>Komponen 2</small><b>Penjelasan Konsep</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 2. KONSEP ================= -->
+<section class="page" data-page="konsep" data-title="Penjelasan Konsep" aria-labelledby="h2-2">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-globe" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 2 · Penjelasan Konsep</span><h1 id="h2-2">Siapa menahan apa</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">Setiap kategori DDoS punya sasaran dan satuan ukur sendiri, dan karena itu penangkal utamanya juga berbeda. Lapisan disusun dari tepi internet ke dalam.</p></div></header></div>
+    <div class="s4 stack"><nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+      <li><a href="#k2-kategori">Kategori DDoS</a></li><li><a href="#k2-lapis">Tiga lapisan utama</a></li><li><a href="#k2-dukung">Teknologi pendukung</a></li><li><a href="#k2-kasus">Contoh kasus: GitHub 2018</a></li><li><a href="#k2-risiko">Risiko &amp; efek samping</a></li></ol></nav></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="k2-kategori"><div class="chead"><span class="no">01</span><h2>Kategori DDoS</h2></div><div class="body">
+      <div class="tbl"><table>
+        <thead><tr><th>Kategori</th><th>Target utama</th><th>Satuan</th><th>Pertahanan utama</th><th>Contoh</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Volumetrik</strong></td><td>Pipa bandwidth ISP</td><td>Gbps / Tbps</td><td class="em">BGP Anycast Cloud Scrubbing</td><td>UDP Flood, amplifikasi DNS/NTP/Memcached</td></tr>
+          <tr><td><strong>Protokol</strong></td><td>Firewall dan RAM tabel koneksi (TCB)</td><td>Paket/detik (PPS)</td><td class="em">SYN Cookies &amp; stateful tuning</td><td>SYN Flood</td></tr>
+          <tr><td><strong>Lapisan aplikasi</strong></td><td>Web server dan database</td><td>Permintaan/detik (RPS)</td><td class="em">WAF, Rate Limit &amp; CAPTCHA</td><td>HTTP GET/POST Flood, Slowloris</td></tr>
+        </tbody></table></div>
+      <p class="muted small">Sumber tabel: <a class="cite" href="#ref-1">[1]</a>. Gbps/Tbps mengukur berapa banyak "air" di pipa; PPS mengukur jumlah "amplop" per detik; RPS mengukur jumlah "pesanan" halaman per detik.</p>
+    </div></div>
+    <div class="chapter" id="k2-lapis"><div class="chead"><span class="no">02</span><h2>Tiga lapisan utama</h2></div><div class="body">
+      <h3 style="margin-top:0">BGP Anycast Scrubbing</h3>
+      <p><strong>BGP</strong> (Border Gateway Protocol) adalah "sistem navigasi" antarjaringan besar di internet. <strong>Anycast</strong> berarti satu alamat IP diumumkan dari banyak lokasi sekaligus, sehingga trafik diarahkan ke pusat data terdekat dan banjir terpecah ke banyak tempat <a class="cite" href="#ref-6">[6]</a>. Di <strong>scrubbing center</strong>, trafik jahat dibuang dan trafik bersih diteruskan ke server asli <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-5">[5]</a>. <strong>Menahan:</strong> serangan volumetrik Gbps–Tbps. <strong>Batas:</strong> butuh penyedia pihak ketiga dan pengaturan DNS/BGP.</p>
+      <h3>WAF &amp; JS Challenge</h3>
+      <p><strong>WAF</strong> (Web Application Firewall) bekerja di Layer 7: ia membaca URL, parameter form, cookie, dan header HTTP, sesuatu yang tidak bisa dilakukan firewall jaringan biasa <a class="cite" href="#ref-3">[3]</a>. <strong>JS Challenge</strong> memberi pengunjung kode JavaScript kecil yang dijalankan otomatis oleh browser asli tetapi gagal dikerjakan skrip bot sederhana; <strong>CAPTCHA</strong> adalah tes yang mudah bagi manusia dan sulit bagi program <a class="cite" href="#ref-1">[1]</a>. <strong>Menahan:</strong> bot di lapisan aplikasi. <strong>Batas:</strong> CAPTCHA merepotkan pengguna asli, dan tidak berguna melawan banjir UDP.</p>
+      <h3>Rate Limiting</h3>
+      <p>Web server seperti <strong>Nginx</strong> bisa membatasi jumlah permintaan per detik dari setiap alamat IP; kelebihannya ditunda atau ditolak <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-11">[11]</a>. <strong>Menahan:</strong> sedikit sumber yang terlalu agresif. <strong>Batas:</strong> botnet besar yang tiap botnya "sopan" tetap lolos, dan pengguna yang berbagi satu IP (misalnya Wi-Fi kampus) bisa ikut terblokir.</p>
+      <figure class="analogy"><span class="k">Analogi seni digital</span><span class="t">Layer di Photoshop atau Clip Studio</span><p>Gambar akhir terbentuk dari beberapa layer yang ditumpuk. Kalau satu layer berlubang, layer di atasnya menutupi. Kalau hanya ada satu layer dan ia berlubang, lubangnya langsung terlihat di gambar akhir.</p></figure>
+    </div></div>
+    <div class="chapter" id="k2-dukung"><div class="chead"><span class="no">03</span><h2>Teknologi pendukung</h2></div><div class="body">
+      <div class="defs">
+        <div><h4>SYN Cookies</h4><p>Informasi koneksi disandikan di dalam nomor urut paket SYN/ACK, sehingga server tidak memesan RAM sebelum klien membalas ACK yang sah. Menangkal SYN Flood <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-12">[12]</a>.</p></div>
+        <div><h4>Firewall stateful</h4><p>Generasi kedua firewall mencatat status koneksi (NEW, ESTABLISHED, RELATED) dan menolak paket asing tanpa sesi sah <a class="cite" href="#ref-3">[3]</a>.</p></div>
+        <div><h4>IDS dan IPS</h4><p>IDS memantau di luar jalur dan memberi peringatan; IPS dipasang di jalur dan bisa memblokir langsung, dengan risiko <em>false positive</em> memutus transaksi sah <a class="cite" href="#ref-3">[3]</a>.</p></div>
+        <div><h4>SIEM dan SOC</h4><p>SIEM mengumpulkan dan menghubungkan log dari banyak perangkat; tim SOC memakainya untuk mendeteksi dan merespons <a class="cite" href="#ref-3">[3]</a>.</p></div>
+        <div><h4>BCP 38 dan uRPF</h4><p>ISP membuang paket yang alamat pengirimnya tidak cocok dengan jalurnya, sehingga paket palsu berhenti di sumber <a class="cite" href="#ref-2">[2]</a><a class="cite" href="#ref-8">[8]</a><a class="cite" href="#ref-7">[7]</a>.</p></div>
+        <div><h4>Menutup reflector</h4><p>Matikan akses publik ke <code>monlist</code> NTP dan tutup UDP 11211 Memcached agar server Anda tidak dipakai untuk amplifikasi <a class="cite" href="#ref-1">[1]</a>.</p></div>
+      </div>
+    </div></div>
+    <div class="chapter" id="k2-kasus"><div class="chead"><span class="no">04</span><h2>Contoh kasus: GitHub 2018</h2></div><div class="body">
+      <p class="lede">Pada 28 Februari 2018, GitHub diserang banjir amplifikasi Memcached yang memuncak di 1,35 Tbps <a class="cite" href="#ref-9">[9]</a>.</p>
+      <ol class="process">
+        <li><div><b>17.21 UTC · terdeteksi.</b>Lonjakan trafik masuk ke pusat data GitHub; serangan memakai amplifikasi Memcached dengan faktor hingga 51.000× dan 126,9 juta paket per detik <a class="cite" href="#ref-9">[9]</a>.</div></li>
+        <li><div><b>17.26 UTC · trafik dialihkan.</b>GitHub memindahkan rute trafiknya ke penyedia mitigasi Akamai, yang menyaring banjir di jaringannya yang jauh lebih besar <a class="cite" href="#ref-9">[9]</a>.</div></li>
+        <li><div><b>17.30 UTC · pulih penuh.</b>Layanan kembali normal sekitar sembilan menit setelah serangan terdeteksi <a class="cite" href="#ref-9">[9]</a>.</div></li>
+      </ol>
+      <p>Pelajarannya: banjir sebesar ini tidak mungkin ditahan di pipa sendiri. Yang menyelamatkan adalah <strong>scrubbing di hulu</strong> dan <strong>deteksi cepat</strong> yang membuat pengalihan bisa dilakukan dalam hitungan menit.</p>
+    </div></div>
+    <div class="chapter" id="k2-risiko"><div class="chead"><span class="no">05</span><h2>Risiko &amp; efek samping</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>False positive.</strong> Pertahanan yang terlalu ketat ikut memblokir pengguna asli: CAPTCHA yang menjengkelkan, rate limit yang memotong pengguna di balik NAT, atau IPS yang salah menilai trafik <a class="cite" href="#ref-3">[3]</a>.</li>
+        <li><strong>Celah antarlapisan.</strong> WAF tidak melihat banjir UDP; scrubbing tidak selalu bisa membedakan bot Layer 7 yang meniru manusia.</li>
+        <li><strong>Waktu deteksi.</strong> Pengalihan ke scrubbing yang diaktifkan saat dibutuhkan baru bekerja setelah serangan dikenali <a class="cite" href="#ref-5">[5]</a>.</li>
+        <li><strong>Tabir asap.</strong> DDoS bisa mengalihkan perhatian dari pencurian data di sistem lain <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-10">[10]</a>.</li>
+      </ul>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>Volumetrik (Gbps/Tbps) ditahan BGP Anycast Scrubbing.</li>
+    <li>Protokol (PPS) ditahan SYN Cookies dan stateful tuning.</li>
+    <li>Lapisan aplikasi (RPS) ditahan WAF, rate limit, dan CAPTCHA.</li>
+    <li>Setiap lapisan punya efek samping: perhatikan false positive.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#pengantar"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 1</small><b>Pengantar Topik</b></span></a><a class="nx" href="#proses"><span><small>Komponen 3</small><b>Proses Bertahap</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 3. PROSES ================= -->
+<section class="page" data-page="proses" data-title="Proses Bertahap" aria-labelledby="h2-3">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-night" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 3 · Proses Bertahap</span><h1 id="h2-3">Membangun dan menjalankan pertahanan</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">Mitigasi bukan satu tombol, melainkan siklus: kenali kondisi normal, pasang lapisan sesuai risiko, deteksi lonjakan, alihkan dan saring trafik, lalu evaluasi dan sesuaikan.</p></div></header></div>
+    <div class="s4 stack"><div class="tile stat"><svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-layers" width="600" height="400"/></svg><span class="big">6 tahap</span><span class="lbl">siklus mitigasi DDoS</span></div></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="pr2-jalur"><div class="chead"><span class="no">01</span><h2>Jalur trafik</h2><p>Dari internet ke server, kiri ke kanan.</p></div><div class="body wide">
+      <div class="seqwrap"><svg viewBox="0 0 940 170" role="img" aria-label="Jalur trafik: internet, lalu scrubbing center di tepi ISP atau cloud, lalu pipa ISP kantor, firewall dan IPS, WAF dan JS Challenge, rate limiter di Nginx, dan akhirnya server aplikasi." style="min-width:720px">
+        <g font-family="system-ui,sans-serif" text-anchor="middle" font-size="12">
+          <g fill="var(--surface)" stroke="var(--b300)" stroke-width="1.5"><rect x="8" y="50" width="104" height="70" rx="22"/><rect x="140" y="50" width="118" height="70" rx="22"/><rect x="286" y="62" width="120" height="46" rx="23" fill="var(--b100)"/><rect x="434" y="50" width="118" height="70" rx="22"/><rect x="580" y="50" width="118" height="70" rx="22"/><rect x="726" y="50" width="96" height="70" rx="22"/></g>
+          <rect x="846" y="40" width="88" height="90" rx="24" fill="var(--primary)"/>
+          <g fill="var(--ink)" font-weight="700"><text x="60" y="82">Internet</text><text x="199" y="80">Scrubbing</text><text x="346" y="90">Pipa ISP</text><text x="493" y="80">Firewall · IPS</text><text x="639" y="80">WAF · JS</text><text x="774" y="80">Rate limit</text></g>
+          <g fill="var(--muted)" font-size="10.5"><text x="60" y="100">campuran</text><text x="199" y="98">tepi ISP / cloud</text><text x="493" y="98">jaringan</text><text x="639" y="98">Layer 7</text><text x="774" y="98">Nginx</text></g>
+          <text x="890" y="82" fill="var(--on-primary)" font-weight="700">Server</text><text x="890" y="100" fill="var(--on-primary)" font-size="10.5" opacity=".85">aplikasi</text>
+          <g stroke="var(--b600)" stroke-width="2.5" fill="none"><path d="M112 85h26M258 85h26M406 85h26M552 85h26M698 85h26M822 85h22" class="flowline"/></g>
+          <text x="470" y="152" fill="var(--muted)" font-size="11">Semakin ke kanan, semakin sempit dan semakin "pintar" penyaringnya.</text>
+        </g></svg></div>
+      <p class="hint">Geser diagram ke samping untuk melihat seluruhnya.</p>
+    </div></div>
+    <div class="chapter" id="pr2-tahap"><div class="chead"><span class="no">02</span><h2>Siklus mitigasi</h2></div><div class="body">
+      <ol class="process">
+        <li><div><b>Kenali kondisi normal.</b>Catat PPS, RPS, bandwidth, dan CPU harian sebagai garis dasar, karena deteksi berbasis anomali membandingkan trafik dengan perilaku normal <a class="cite" href="#ref-3">[3]</a>.</div></li>
+        <li><div><b>Pasang lapisan sesuai risiko.</b>Scrubbing untuk banjir volumetrik, SYN Cookies dan firewall stateful untuk serangan protokol, WAF dan rate limit untuk lapisan aplikasi <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Deteksi lonjakan.</b>SOC memantau CPU di atas 95%, lonjakan PPS/RPS, dan dominasi HTTP 503 <a class="cite" href="#ref-1">[1]</a>. Layanan mitigasi membedakan serangan dari lonjakan pengunjung asli dengan reputasi IP dan pola serangan <a class="cite" href="#ref-5">[5]</a>.</div></li>
+        <li><div><b>Respons: alihkan dan saring.</b>Trafik dirutekan ke scrubbing; bot dibuang, trafik bersih diteruskan <a class="cite" href="#ref-5">[5]</a><a class="cite" href="#ref-9">[9]</a>.</div></li>
+        <li><div><b>Kendalikan efek samping.</b>Pantau false positive: apakah pengguna asli ikut tertahan CAPTCHA atau rate limit?</div></li>
+        <li><div><b>Evaluasi dan sesuaikan.</b>Analisis log di SIEM, perbarui aturan, dan waspadai penyusupan yang mungkin terjadi selama serangan <a class="cite" href="#ref-3">[3]</a><a class="cite" href="#ref-10">[10]</a>.</div></li>
+      </ol>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>Trafik melewati scrubbing, pipa, firewall/IPS, WAF, rate limit, lalu server.</li>
+    <li>Garis dasar normal adalah syarat deteksi anomali.</li>
+    <li>Mitigasi adalah siklus: deteksi, alihkan, saring, evaluasi.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#konsep"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 2</small><b>Penjelasan Konsep</b></span></a><a class="nx" href="#simulasi"><span><small>Komponen 4</small><b>Simulasi Interaktif</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 4. SIMULASI ================= -->
+<section class="page" data-page="simulasi" data-title="Simulasi Interaktif" aria-labelledby="h2-4">
+  <div class="hello"><span class="eyebrow">Komponen 4 · Simulasi Interaktif</span><h1 id="h2-4">Simulator Pertahanan DDoS Berlapis</h1>
+    <p><strong>Intinya:</strong> Anda adalah pembela dengan anggaran terbatas. Pilih serangan, pasang dan atur lapisan, ikuti trafik melewati setiap lapisan, lalu lihat ketersediaan layanan, false positive, dan biaya. Semua angka adalah model buatan.</p></div>
+
+  <div class="sim" id="sim2">
+    <div class="sim-h"><h3>Ruang kendali pembela</h3><small>Model visual di browser · tidak mengirim apa pun ke jaringan</small></div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">1</span>Pilih skenario serangan</div>
+      <div class="scen" role="group" aria-label="Skenario serangan">
+        <button data-scen="vol" aria-pressed="true"><b>Volumetrik</b><span>Amplifikasi UDP 300 Gbps ke pipa 10 Gbps</span></button>
+        <button data-scen="syn" aria-pressed="false"><b>Protokol</b><span>SYN Flood 2 juta paket per detik</span></button>
+        <button data-scen="http" aria-pressed="false"><b>Lapisan aplikasi</b><span>HTTP GET Flood dari 20.000 bot + 40 IP agresif</span></button>
+        <button data-scen="multi" aria-pressed="false"><b>Multi-vektor</b><span>Ketiganya sekaligus</span></button>
+      </div></div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">2</span>Pasang dan atur lapisan <span style="margin-left:auto;letter-spacing:.04em;text-transform:none" data-budget></span></div>
+      <div class="chips" role="group" aria-label="Lapisan pertahanan">
+        <label class="chk"><input type="checkbox" data-l="scrub">BGP Anycast Scrubbing <span class="cost">4</span></label>
+        <label class="chk"><input type="checkbox" data-l="fw">Firewall stateful <span class="cost">1</span></label>
+        <label class="chk"><input type="checkbox" data-l="ips">IDS/IPS <span class="cost">2</span></label>
+        <label class="chk"><input type="checkbox" data-l="syn">SYN Cookies <span class="cost">1</span></label>
+        <label class="chk"><input type="checkbox" data-l="waf">WAF &amp; JS Challenge <span class="cost">2</span></label>
+        <label class="chk"><input type="checkbox" data-l="rl">Rate Limiting <span class="cost">1</span></label>
+        <label class="chk"><input type="checkbox" data-l="soc">Pemantauan SOC <span class="cost">1</span></label>
+      </div>
+      <div class="params" style="margin-top:16px">
+        <label class="field">Mode tantangan WAF<select data-o="wafmode"><option value="js">JS Challenge (tak terlihat)</option><option value="captcha">CAPTCHA (lebih ketat)</option></select><small>Berlaku jika WAF dipasang.</small></label>
+        <label class="field">Batas rate limit (permintaan/detik per IP)<span class="row"><input type="range" data-o="rlt" min="1" max="500" step="1" value="150"><output>150</output></span><small>Berlaku jika Rate Limiting dipasang. 500 pengguna asli berbagi 10 IP kampus (100 permintaan/detik per IP).</small></label>
+      </div>
+      <p class="muted small" data-budgetmsg style="margin:10px 0 0" aria-live="polite"></p>
+    </div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">3</span>Ikuti trafik lapis demi lapis</div>
+      <div class="ctrl">
+        <button class="ghost" data-act="prev"><svg class="ic sm"><use href="#i-chevl"/></svg>Sebelumnya</button>
+        <button class="play" data-act="play" aria-label="Putar otomatis"><svg class="ic"><use href="#i-play"/></svg></button>
+        <button class="ghost primary" data-act="next">Berikutnya<svg class="ic sm"><use href="#i-chev"/></svg></button>
+        <span class="stepno" data-label></span>
+        <button class="ghost" data-act="reset"><svg class="ic sm"><use href="#i-reset"/></svg>Reset</button>
+      </div>
+      <div class="stage-cap" aria-live="polite"><h4 data-st-title></h4><p data-st-text></p></div>
+      <div style="margin-top:14px"><canvas role="img" aria-label="Trafik bergerak dari kiri ke kanan melewati gerbang-gerbang lapisan pertahanan menuju server. Gerbang yang mati digambar putus-putus. Kepadatan tiap jenis trafik mengikuti hasil perhitungan model."></canvas></div>
+      <div class="legend" aria-hidden="true">
+        <span><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="var(--c-strong)"/></svg>Volumetrik</span>
+        <span><svg viewBox="0 0 14 14"><rect x="2" y="2" width="10" height="10" rx="2" fill="var(--c-strong)" opacity=".55"/></svg>SYN palsu</span>
+        <span><svg viewBox="0 0 14 14"><path d="M7 1.5 13 12.5H1z" fill="var(--c-mid)"/></svg>Bot HTTP</span>
+        <span><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="4.5" fill="none" stroke="var(--c-mid)" stroke-width="2.2"/></svg>IP agresif</span>
+        <span><svg viewBox="0 0 14 14"><path d="M7 1.5 12.5 7 7 12.5 1.5 7z" fill="var(--c-light)" stroke="var(--c-strong)" stroke-width="1.2"/></svg>Pengguna asli</span>
+      </div>
+      <div class="flow" data-flow style="margin-top:16px" aria-label="Ringkasan per lapisan"></div>
+      <div class="kpis" style="margin-top:14px">
+        <div class="kpi" data-k="avail"><div class="v">—</div><div class="l">Ketersediaan selama 10 menit serangan</div><div class="bar"><div class="fill"></div></div></div>
+        <div class="kpi" data-k="served"><div class="v">—</div><div class="l">Pengguna asli terlayani (setelah lapisan aktif)</div><div class="bar"><div class="fill"></div></div></div>
+        <div class="kpi" data-k="fp"><div class="v">—</div><div class="l">False positive (pengguna asli ikut diblokir)</div></div>
+        <div class="kpi" data-k="cost"><div class="v">—</div><div class="l">Biaya dan kerumitan</div></div>
+      </div>
+    </div>
+    <div class="sim-sec"><div class="lbl2"><span class="n">4</span>Evaluasi</div>
+      <button class="ghost primary" data-act="evaluate"><svg class="ic sm"><use href="#i-play"/></svg>Bandingkan dengan tanpa pertahanan</button>
+      <div data-eval style="margin-top:14px"><p class="muted">Evaluasi membandingkan konfigurasi Anda dengan kondisi tanpa pertahanan, lalu menjelaskan lapisan mana yang paling bekerja.</p></div>
+    </div>
+  </div>
+
+  <div class="article">
+    <div class="chapter" id="sim2-model"><div class="chead"><span class="no">i</span><h2>Cara model menghitung</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Sumber daya korban:</strong> pipa 10 Gbps, web server 12.000 permintaan/detik, tabel koneksi sanggup menampung 200.000 SYN/detik tanpa SYN Cookies.</li>
+        <li><strong>Pengguna asli:</strong> 4.000 permintaan/detik; 3.000 dari IP masing-masing (2 per detik) dan 1.000 dari 10 IP kampus bersama (100 per detik per IP).</li>
+        <li><strong>Lapisan:</strong> scrubbing membuang 99% banjir volumetrik, 90% SYN, dan 20% bot; firewall stateful membuang sisa paket UDP sampah; IPS membuang 30% SYN dan IP agresif serta 15% bot dengan 2% false positive; JS Challenge membuang 90% bot (1% false positive), CAPTCHA 98% (7% false positive); rate limit memotong setiap IP yang melebihi batas.</li>
+        <li><strong>Waktu:</strong> scrubbing diaktifkan saat serangan terdeteksi, setelah 4 menit tanpa SOC atau 1 menit dengan SOC, dari total 10 menit serangan.</li>
+      </ul>
+      <p class="muted small">Persentase ini adalah asumsi pembelajaran agar perbedaan antar-lapisan terlihat jelas, bukan data kinerja produk tertentu.</p>
+    </div></div>
+    <div class="chapter" id="cocokkan"><div class="chead"><span class="no">ii</span><h2>Latihan mencocokkan</h2><p>Pilih pertahanan utama untuk setiap jenis serangan.</p></div><div class="body">
+      <div class="match" id="match"></div>
+      <div class="ctrl" style="margin-top:16px"><button class="ghost primary" data-act="check-match"><svg class="ic sm"><use href="#i-check"/></svg>Periksa jawaban</button><span class="muted small" data-matchres aria-live="polite"></span></div>
+    </div></div>
+    <div class="chapter" id="uji"><div class="chead"><span class="no">iii</span><h2>Uji pemahaman</h2><p>Enam soal singkat dengan penjelasan.</p></div><div class="body wide">
+      <div class="quiz" id="quiz2"></div>
+      <div class="score" data-scorebar aria-live="polite"><span>Skor <span class="num" data-score>0</span> / <span data-total>6</span> <span style="opacity:.75;margin-left:8px">dijawab <span data-done>0</span></span></span><button class="ghost" data-act="quiz-reset"><svg class="ic sm"><use href="#i-reset"/></svg>Ulangi</button></div>
+    </div></div>
+  </div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#proses"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 3</small><b>Proses Bertahap</b></span></a><a class="nx" href="#pertahanan"><span><small>Komponen 5</small><b>Penanggulangan</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 5. PERTAHANAN ================= -->
+<section class="page" data-page="pertahanan" data-title="Penanggulangan Keamanan" aria-labelledby="h2-5">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-flood" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 5 · Penanggulangan Keamanan</span><h1 id="h2-5">Konfigurasi &amp; praktik</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">Cegah dengan menyaring di hulu dan menutup celah, perbaiki konfigurasi server dan aplikasi, lalu rawat pertahanan lewat pemantauan dan evaluasi rutin.</p></div></header></div>
+    <div class="s4 stack"><nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+      <li><a href="#d2-cegah">Mencegah</a></li><li><a href="#d2-konfig">Memperbaiki konfigurasi</a></li><li><a href="#d2-praktik">Praktik yang disarankan</a></li><li><a href="#d2-diskusi">Pertanyaan diskusi</a></li></ol></nav></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="d2-cegah"><div class="chead"><span class="no">01</span><h2>Mencegah</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Berlangganan scrubbing sebelum diserang.</strong> Siapkan rute BGP/DNS ke penyedia mitigasi sehingga pengalihan bisa dilakukan dalam hitungan menit, seperti kasus GitHub <a class="cite" href="#ref-5">[5]</a><a class="cite" href="#ref-9">[9]</a><a class="cite" href="#ref-10">[10]</a>.</li>
+        <li><strong>Dorong BCP 38/uRPF dan validasi alamat sumber</strong> di jaringan sendiri dan mitra ISP <a class="cite" href="#ref-7">[7]</a><a class="cite" href="#ref-8">[8]</a>.</li>
+        <li><strong>Perkecil permukaan serangan:</strong> matikan layanan dan port yang tidak dipakai, dan buka hanya port yang dibutuhkan <a class="cite" href="#ref-3">[3]</a>.</li>
+        <li><strong>Jangan menjadi reflector:</strong> tutup akses publik ke <code>monlist</code> NTP dan UDP 11211 Memcached <a class="cite" href="#ref-1">[1]</a>. Pada konfigurasi NTP umum, <code>monlist</code> dimatikan dengan menambahkan pembatasan <code>noquery</code>.</li>
+      </ul>
+    </div></div>
+    <div class="chapter" id="d2-konfig"><div class="chead"><span class="no">02</span><h2>Memperbaiki konfigurasi</h2></div><div class="body">
+      <p>Semua contoh di bawah adalah konfigurasi <strong>defensif</strong> untuk server milik sendiri.</p>
+      <div class="code" role="group" aria-label="Konfigurasi rate limiting Nginx dengan penjelasan per baris">
+        <div class="hd"><span>Nginx · rate limiting</span><span>contoh</span></div>
+        <div class="row"><pre><span class="k">limit_req_zone</span> $binary_remote_addr
+    zone=per_ip:10m rate=10r/s;</pre><div class="ex">Buat "buku catatan" <code>per_ip</code> berukuran 10 MB yang menghitung permintaan <b>per alamat IP</b>, dengan batas <b>10 permintaan per detik</b> <a class="cite" href="#ref-11">[11]</a>.</div></div>
+        <div class="row"><pre>location / {
+    <span class="k">limit_req</span> zone=per_ip burst=20 nodelay;</pre><div class="ex">Terapkan di semua halaman. <code>burst=20</code> memberi kelonggaran lonjakan singkat; <code>nodelay</code> membuat permintaan dalam kelonggaran itu tidak ditunda <a class="cite" href="#ref-11">[11]</a>.</div></div>
+        <div class="row"><pre>    <span class="k">limit_req_status</span> 429;
+}</pre><div class="ex">Permintaan yang ditolak dijawab <b>429 Too Many Requests</b>. Bawaan Nginx adalah 503 <a class="cite" href="#ref-11">[11]</a>.</div></div>
+      </div>
+      <div class="code" role="group" aria-label="Perintah sysctl SYN cookies dengan penjelasan per baris">
+        <div class="hd"><span>Kernel Linux · SYN Cookies &amp; backlog</span></div>
+        <div class="row"><pre><span class="c"># Aktifkan SYN Cookies di Linux</span>
+sysctl -w net.ipv4.tcp_syncookies=1</pre><div class="ex">Kirim SYN cookies saat antrean SYN penuh, untuk menangkal SYN Flood <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-12">[12]</a>.</div></div>
+        <div class="row"><pre><span class="c"># Kurangi retries SYN/ACK gantung</span>
+sysctl -w net.ipv4.tcp_synack_retries=2</pre><div class="ex">Kirim ulang SYN/ACK paling banyak dua kali (bawaan 5), agar koneksi palsu cepat dibuang <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-12">[12]</a>.</div></div>
+        <div class="row"><pre><span class="c"># Perbesar kapasitas antrean backlog</span>
+sysctl -w net.ipv4.tcp_max_syn_backlog=4096</pre><div class="ex">Perbesar jumlah permintaan koneksi (SYN_RECV) yang bisa diingat sebelum ACK diterima <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-12">[12]</a>.</div></div>
+      </div>
+      <div class="code" role="group" aria-label="Perintah deteksi netstat dengan penjelasan per baris">
+        <div class="hd"><span>Terminal Linux · deteksi (hanya membaca)</span></div>
+        <div class="row"><pre>netstat -an | grep SYN_RECV | wc -l</pre><div class="ex">Hitung koneksi setengah terbuka. Lebih dari <b>100</b> adalah indikasi awal SYN Flood <a class="cite" href="#ref-1">[1]</a>.</div></div>
+        <div class="row"><pre>netstat -ntu | awk '{print $5}' | cut -d: -f1 | \
+sort | uniq -c | sort -n</pre><div class="ex">Hitung koneksi per alamat IP untuk menemukan sumber terbanyak <a class="cite" href="#ref-1">[1]</a>.</div></div>
+      </div>
+    </div></div>
+    <div class="chapter" id="d2-praktik"><div class="chead"><span class="no">03</span><h2>Praktik yang disarankan</h2></div><div class="body">
+      <ol class="process">
+        <li><div><b>Cocokkan pertahanan dengan kategori serangan.</b>Gunakan tabel volumetrik–protokol–aplikasi sebagai panduan <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Pantau indikator SOC.</b>CPU di atas 95%, lonjakan PPS/RPS, dan dominasi HTTP 503 <a class="cite" href="#ref-1">[1]</a>; korelasikan log di SIEM <a class="cite" href="#ref-3">[3]</a>.</div></li>
+        <li><div><b>Uji false positive.</b>Atur ambang rate limit dengan memperhitungkan pengguna di balik NAT, dan pilih JS Challenge sebelum CAPTCHA.</div></li>
+        <li><div><b>Siapkan rencana respons.</b>Kontak ISP dan penyedia mitigasi, rencana pemulihan, dan kewaspadaan terhadap tabir asap <a class="cite" href="#ref-10">[10]</a>.</div></li>
+      </ol>
+    </div></div>
+    <div class="chapter" id="d2-diskusi"><div class="chead"><span class="no">04</span><h2>Pertanyaan diskusi</h2></div><div class="body">
+      <p class="lede">Mengapa memblokir IP pada firewall lokal tidak efektif menahan DDoS volumetrik? <a class="cite" href="#ref-1">[1]</a></p>
+      <ol class="process">
+        <li><div><b>Pipanya sudah penuh sebelum paket sampai ke firewall.</b>Firewall lokal berada di ujung pipa internet. Banjir Gbps–Tbps memenuhi jalur dari ISP lebih dulu, jadi pengguna asli tetap tidak bisa lewat meski firewall membuang paket jahat.</div></li>
+        <li><div><b>Sumbernya terlalu banyak.</b>Botnet bisa berisi ratusan ribu perangkat dengan IP berbeda.</div></li>
+        <li><div><b>Alamatnya palsu atau sah.</b>Dengan IP spoofing, alamat yang terlihat bukan pelaku. Pada amplifikasi, paket datang dari server publik yang sah <a class="cite" href="#ref-2">[2]</a>.</div></li>
+        <li><div><b>Firewall ikut kewalahan.</b>Memeriksa jutaan paket per detik menghabiskan tenaga firewall itu sendiri.</div></li>
+      </ol>
+      <p><strong>Solusinya adalah menyaring sebelum pipa:</strong> BGP Anycast Scrubbing di tingkat ISP atau cloud, ditambah BCP 38 agar paket palsu dibuang di sumbernya <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-8">[8]</a>.</p>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Jalan yang macet total</span><p>Mengunci pintu rumah tidak menolong jika jalan menuju rumah sudah macet. Tamu yang Anda tunggu tetap tidak bisa datang. Kemacetan harus diurai di persimpangan besar, bukan di depan pintu.</p></figure>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>Siapkan scrubbing sebelum diserang; deteksi cepat mempersingkat gangguan.</li>
+    <li>Rate limit, SYN Cookies, dan WAF dikonfigurasi di server dan aplikasi sendiri.</li>
+    <li>Atur ambang dengan memperhitungkan false positive.</li>
+    <li>Blokir IP lokal tidak efektif untuk volumetrik: pipa penuh, alamat banyak dan palsu.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#simulasi"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 4</small><b>Simulasi Interaktif</b></span></a><a class="nx" href="#referensi"><span><small>Komponen 6</small><b>Referensi</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 6. REFERENSI ================= -->
+<section class="page" data-page="referensi" data-title="Referensi" aria-labelledby="h2-6">
+  <div class="hello"><span class="eyebrow">Komponen 6 · Referensi</span><h1 id="h2-6">Referensi</h1><p>Format APA 7. Nomor di dalam teks, misalnya [1], mengarah ke daftar di bawah. Semua tautan diperiksa dapat dibuka pada November 2026.</p></div>
+  <div class="article"><div class="chapter"><div class="chead"><span class="no">≡</span><h2>Daftar pustaka</h2></div><div class="body">
+    <ol class="refs">
+      <li id="ref-1"><span>Dinata, Y. M., &amp; Wonohadidjojo, D. M. (2026). <em>Network level attacks &amp; defense: Denial-of-Service (DoS/DDoS), botnet, &amp; session hijacking</em> (Modul 07 Bagian 2, slide 40, 46, 50, 53–59) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502, Program Studi Informatika, Universitas Ciputra.</span></li>
+      <li id="ref-2"><span>Dinata, Y. M., &amp; Wonohadidjojo, D. M. (2026). <em>Network level attacks &amp; reconnaissance</em> (Modul 07 Bagian 1, slide 27–30) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502, Program Studi Informatika, Universitas Ciputra.</span></li>
+      <li id="ref-3"><span>Dinata, Y. M., &amp; Wonohadidjojo, D. M. (2026). <em>Network level attacks &amp; defense: Network hardening, firewall, IDS/IPS, VPN, SIEM, &amp; defense-in-depth</em> (Modul 07 Bagian 3, slide 76–78, 82–85, 88–89, 101) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502, Program Studi Informatika, Universitas Ciputra.</span></li>
+      <li id="ref-4"><span>Universitas Ciputra. (2026). <em>Week 10: Reconnaissance, enumerasi, dan analisis kerentanan</em> (slide 19) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502.</span></li>
+      <li id="ref-5"><span>Cloudflare. (n.d.). <em>What is DDoS mitigation?</em> Cloudflare Learning Center. <a href="https://www.cloudflare.com/learning/ddos/ddos-mitigation/">https://www.cloudflare.com/learning/ddos/ddos-mitigation/</a></span></li>
+      <li id="ref-6"><span>Cloudflare. (n.d.). <em>What is Anycast? How does Anycast work?</em> Cloudflare Learning Center. <a href="https://www.cloudflare.com/learning/cdn/glossary/anycast-network/">https://www.cloudflare.com/learning/cdn/glossary/anycast-network/</a></span></li>
+      <li id="ref-7"><span>Sriram, K., &amp; Montgomery, D. (2019). <em>Resilient interdomain traffic exchange: BGP security and DDoS mitigation</em> (NIST Special Publication 800-189). National Institute of Standards and Technology. <a href="https://csrc.nist.gov/pubs/sp/800/189/final">https://csrc.nist.gov/pubs/sp/800/189/final</a></span></li>
+      <li id="ref-8"><span>Ferguson, P., &amp; Senie, D. (2000). <em>Network ingress filtering: Defeating denial of service attacks which employ IP source address spoofing</em> (RFC 2827, BCP 38). RFC Editor. <a href="https://www.rfc-editor.org/rfc/rfc2827">https://www.rfc-editor.org/rfc/rfc2827</a></span></li>
+      <li id="ref-9"><span>Kottler, S. (2018, 1 Maret). <em>February 28th DDoS incident report</em>. The GitHub Blog. <a href="https://github.blog/news-insights/company-news/ddos-incident-report/">https://github.blog/news-insights/company-news/ddos-incident-report/</a></span></li>
+      <li id="ref-10"><span>Cybersecurity and Infrastructure Security Agency. (2021, 1 Februari). <em>Understanding denial-of-service attacks</em>. <a href="https://www.cisa.gov/news-events/news/understanding-denial-service-attacks">https://www.cisa.gov/news-events/news/understanding-denial-service-attacks</a></span></li>
+      <li id="ref-11"><span>NGINX. (n.d.). <em>Module ngx_http_limit_req_module</em>. nginx documentation. <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">https://nginx.org/en/docs/http/ngx_http_limit_req_module.html</a></span></li>
+      <li id="ref-12"><span>The Linux Kernel documentation. (n.d.). <em>IP sysctl</em>. <a href="https://docs.kernel.org/networking/ip-sysctl.html">https://docs.kernel.org/networking/ip-sysctl.html</a></span></li>
+      <li id="ref-13"><span>Republik Indonesia. (2008). <em>Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik</em>. JDIH BPK. <a href="https://peraturan.bpk.go.id/Details/37589/uu-no-11-tahun-2008">https://peraturan.bpk.go.id/Details/37589/uu-no-11-tahun-2008</a></span></li>
+      <li id="ref-14"><span>Republik Indonesia. (2024). <em>Undang-Undang Nomor 1 Tahun 2024 tentang Perubahan Kedua atas Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik</em>. JDIH BPK. <a href="https://peraturan.bpk.go.id/Details/274494/uu-no-1-tahun-2024">https://peraturan.bpk.go.id/Details/274494/uu-no-1-tahun-2024</a></span></li>
+    </ol>
+  </div></div></div>
+  <div class="tile remember"><h2>Peta komponen tugas</h2><ol>
+    <li><a href="#pengantar">Pengantar Topik</a>: nama topik, definisi, tujuan, relevansi.</li>
+    <li><a href="#konsep">Penjelasan Konsep</a>: kategori DDoS, tiga lapisan, teknologi pendukung, contoh kasus GitHub 2018, risiko.</li>
+    <li><a href="#proses">Proses Bertahap</a>: jalur trafik dan siklus mitigasi enam tahap.</li>
+    <li><a href="#simulasi">Simulasi Interaktif</a>: skenario, lapisan dan anggaran, tahap per lapisan, evaluasi, latihan mencocokkan, uji pemahaman.</li>
+    <li><a href="#pertahanan">Penanggulangan Keamanan</a>: mencegah, konfigurasi, praktik, pertanyaan diskusi.</li>
+    <li><a href="#referensi">Referensi</a>: daftar pustaka dengan sitasi di dalam teks.</li></ol></div>
+</section>
+
+    </main>
+    <footer class="foot">
+      <span><b>Cyber Security (IMT01307502)</b> · Informatika, Universitas Ciputra · Topik: Strategi Mitigasi DDoS Berlapis</span>
+      <span>Kelompok: Jefferson Jap (NIM 0706012410072) · Vincent (NIM 0706012410032) · Rifki Indra Nugroho (NIM 0706012410033) · Precious Nathan (NIM 0706012410027)</span>
+      <span><a href="../index.html">Hub proyek</a> · <a href="../udp-flood/index.html">UDP Flood &amp; Port Exhaustion</a> · <a href="../ssl-stripping/index.html">SSL Stripping</a></span>
+    </footer>
+  </div>
+</div>
+<nav class="bottomnav" aria-label="Navigasi komponen">
+  <a href="#pengantar" data-nav="pengantar"><svg class="ic"><use href="#i-intro"/></svg>Pengantar</a>
+  <a href="#konsep" data-nav="konsep"><svg class="ic"><use href="#i-concept"/></svg>Konsep</a>
+  <a href="#proses" data-nav="proses"><svg class="ic"><use href="#i-steps"/></svg>Proses</a>
+  <a href="#simulasi" data-nav="simulasi"><svg class="ic"><use href="#i-sim"/></svg>Simulasi</a>
+  <a href="#pertahanan" data-nav="pertahanan"><svg class="ic"><use href="#i-shield"/></svg>Pertahanan</a>
+  <a href="#referensi" data-nav="referensi"><svg class="ic"><use href="#i-refs"/></svg>Referensi</a>
+</nav>
+<button class="roundbtn" id="toTop" aria-label="Kembali ke atas"><svg class="ic"><use href="#i-up"/></svg></button>
+<script src="../assets/ehe.js"></script>
+<script>
+(function(){
+"use strict";
+const {$,$$,clamp,fmt,icon,C,themeHooks,makeCanvas,rrect,diamond,tri,loop,stepper,quiz}=EHE;
+const el=$('#sim2');
+const BUDGET=8;
+const COST={scrub:4,fw:1,ips:2,syn:1,waf:2,rl:1,soc:1};
+const LNAME={scrub:'BGP Anycast Scrubbing',fw:'Firewall stateful',ips:'IDS/IPS',syn:'SYN Cookies',waf:'WAF & JS Challenge',rl:'Rate Limiting',soc:'Pemantauan SOC'};
+const SCEN={vol:{vol:300,syn:0,bot:0,aggr:0},syn:{vol:0,syn:2e6,bot:0,aggr:0},http:{vol:0,syn:0,bot:1e5,aggr:16000},multi:{vol:150,syn:1.5e6,bot:6e4,aggr:16000}};
+const SNAME={vol:'Volumetrik',syn:'Protokol (SYN Flood)',http:'Lapisan aplikasi (HTTP Flood)',multi:'Multi-vektor'};
+const PIPE=10,HTTP_CAP=12000,SYN_CAP=2e5,JUNK_CAP=3,LEGIT_IND=3000,LEGIT_NAT=1000;
+let scen='vol',cfg={on:{},wafmode:'js',rlt:150};
+
+/* ---------- model: push traffic through each layer ---------- */
+function run(sc,c,scrubActive){
+  const t=Object.assign({},SCEN[sc],{li:LEGIT_IND,ln:LEGIT_NAT});
+  const legit0=t.li+t.ln;const pressure=x=>({vol:x.vol/PIPE,syn:x.syn/SYN_CAP,http:(x.bot+x.aggr)/HTTP_CAP});
+  const stages=[];let fpLost=0,synProt=false;
+  const snap=()=>Object.assign({},t);
+  function layer(key,name,on,fn){const before=snap();if(on)fn();const after=snap();
+    const lg=(before.li+before.ln)-(after.li+after.ln);if(on&&key!=='pipe')fpLost+=lg;
+    stages.push({key,name,on,before,after,legitLost:lg});}
+  stages.push({key:'net',name:'Internet',on:true,before:snap(),after:snap(),legitLost:0});
+  layer('scrub','Scrubbing',!!(c.on.scrub&&scrubActive),()=>{t.vol*=.01;t.syn*=.1;t.bot*=.8;t.li*=.995;t.ln*=.995;});
+  layer('pipe','Pipa ISP 10 Gbps',true,()=>{const g=t.vol+t.syn*480/1e9+(t.bot+t.aggr+t.li+t.ln)*6400/1e9;const u=g/PIPE;t.util=u;if(u>1){const k=1/u;['vol','syn','bot','aggr','li','ln'].forEach(x=>t[x]*=k);}});
+  layer('fw','Firewall stateful',!!c.on.fw,()=>{t.vol=0;});
+  layer('ips','IDS/IPS',!!c.on.ips,()=>{t.syn*=.7;t.aggr*=.7;t.bot*=.85;t.li*=.98;t.ln*=.98;});
+  layer('syn','SYN Cookies',!!c.on.syn,()=>{synProt=true;});
+  layer('waf','WAF & '+(c.wafmode==='captcha'?'CAPTCHA':'JS Challenge'),!!c.on.waf,()=>{if(c.wafmode==='captcha'){t.bot*=.02;t.aggr*=.2;t.li*=.93;t.ln*=.93;}else{t.bot*=.1;t.aggr*=.5;t.li*=.99;t.ln*=.99;}});
+  layer('rl','Rate limit '+c.rlt+'/detik',!!c.on.rl,()=>{const T=c.rlt;t.aggr*=Math.min(400,T)/400;t.bot*=Math.min(5,T)/5;t.li*=Math.min(2,T)/2;t.ln*=Math.min(100,T)/100;});
+  const httpLoad=(t.bot+t.aggr+t.li+t.ln)/HTTP_CAP,synLoad=synProt?0:t.syn/SYN_CAP,junkLoad=t.vol/JUNK_CAP;
+  const serverFactor=(1/Math.max(1,httpLoad,junkLoad))*(synLoad>1?1/synLoad:1);
+  const served=(t.li+t.ln)/legit0*serverFactor;
+  stages.push({key:'srv',name:'Server',on:true,before:snap(),after:snap(),httpLoad,synLoad,junkLoad,legitLost:0});
+  const util=stages.find(s=>s.key==='pipe').after.util;
+  return {stages,served,fp:fpLost/legit0,httpLoad,synLoad,junkLoad,util,pressure,t0:SCEN[sc]};}
+function evaluate(sc,c){
+  const delay=c.on.soc?1:4;
+  const on=run(sc,c,true),off=run(sc,c,false);
+  const availability=c.on.scrub?(delay*off.served+(10-delay)*on.served)/10:on.served;
+  return {steady:on,availability,delay};}
+
+/* ---------- UI: scenario + layers ---------- */
+const budgetEl=$('[data-budget]',el),budgetMsg=$('[data-budgetmsg]',el);
+const used=()=>Object.keys(cfg.on).filter(k=>cfg.on[k]).reduce((a,k)=>a+COST[k],0);
+function updBudget(){budgetEl.textContent='Anggaran '+used()+' / '+BUDGET;}
+$$('[data-l]',el).forEach(cb=>cb.addEventListener('change',()=>{const k=cb.dataset.l;
+  if(cb.checked&&used()+COST[k]>BUDGET){cb.checked=false;budgetMsg.textContent='Anggaran tidak cukup untuk '+LNAME[k]+' (biaya '+COST[k]+'). Lepas lapisan lain dulu; inilah alasan pertahanan harus dipilih sesuai jenis serangan.';return;}
+  budgetMsg.textContent='';cfg.on[k]=cb.checked;cb.closest('.chk').classList.toggle('on',cb.checked);updBudget();refresh();}));
+$('[data-o=wafmode]',el).addEventListener('change',e=>{cfg.wafmode=e.target.value;refresh();});
+const rl=$('[data-o=rlt]',el);rl.addEventListener('input',()=>{cfg.rlt=+rl.value;rl.parentElement.querySelector('output').textContent=rl.value;refresh();});
+$$('[data-scen]',el).forEach(b=>b.addEventListener('click',()=>{scen=b.dataset.scen;$$('[data-scen]',el).forEach(x=>x.setAttribute('aria-pressed',x===b));$('[data-eval]',el).innerHTML='<p class="muted">Skenario berubah. Tekan tombol evaluasi lagi.</p>';player.stop();player.go(0);}));
+
+/* ---------- formatting ---------- */
+const num=v=>v>=1e6?fmt(v/1e6,2)+' jt':v>=1e3?fmt(v/1e3,1)+' rb':fmt(v,0);
+const pct=v=>fmt(v*100,v<.1&&v>0?1:0)+'%';
+function trafficLine(x){const parts=[];if(x.vol>.005)parts.push(fmt(x.vol,x.vol<10?1:0)+' Gbps banjir');if(x.syn>1)parts.push(num(x.syn)+' SYN/dtk');if(x.bot>1)parts.push(num(x.bot)+' bot/dtk');if(x.aggr>1)parts.push(num(x.aggr)+' agresif/dtk');return parts.length?parts.join(' · '):'tidak ada trafik jahat';}
+
+/* ---------- stages ---------- */
+let R=null,stage=0;
+function stagesList(){return R.steady.stages;}
+const player=stepper({count:()=>R?R.steady.stages.length:9,onStep:showStage,prev:$('[data-act=prev]',el),next:$('[data-act=next]',el),play:$('[data-act=play]',el),label:$('[data-label]',el)});
+function stageText(s){const b=s.before,a=s.after;const lg=s.legitLost/(LEGIT_IND+LEGIT_NAT);
+  if(s.key==='net')return ['Internet: trafik masuk','Trafik menuju server: '+trafficLine(b)+', ditambah 4.000 permintaan/detik dari pengguna asli. Tekan "Berikutnya" untuk mengikuti trafik melewati setiap lapisan.'];
+  if(s.key==='srv'){const m=R.steady;const why=m.junkLoad>1?'Server sibuk menerima paket UDP sampah yang lolos.':m.synLoad>1?'Tabel koneksi penuh oleh SYN palsu, sehingga koneksi baru ditolak.':m.httpLoad>1?'Web server menerima '+fmt(m.httpLoad*100,0)+'% dari kapasitasnya.':'Beban server dalam batas aman.';
+    return ['Server: hasil akhir',why+' Pengguna asli terlayani '+pct(m.served)+' setelah semua lapisan aktif; ketersediaan selama 10 menit serangan '+pct(R.availability)+'.'];}
+  if(!s.on)return [s.name+': tidak dipasang',s.key==='scrub'?'Tanpa scrubbing, seluruh banjir langsung menuju pipa kantor.':'Lapisan ini tidak aktif. Trafik lewat begitu saja: '+trafficLine(a)+'.'];
+  if(s.key==='pipe'){const u=a.util;return ['Pipa ISP: '+pct(u)+' terpakai',u>1?'Pipa penuh. Semua trafik dipangkas rata, termasuk pengguna asli: hanya '+pct(1/u)+' yang lolos. Lapisan setelah ini tidak bisa mengembalikan yang sudah terbuang.':'Pipa masih longgar, semua trafik lolos. Tersisa: '+trafficLine(a)+'.'];}
+  if(s.key==='syn')return ['SYN Cookies aktif','SYN palsu tidak lagi memenuhi tabel koneksi, karena server baru memesan memori setelah ACK yang sah diterima. Paketnya tetap lewat, tetapi tidak berbahaya.'];
+  return [s.name,'Masuk: '+trafficLine(b)+'. Keluar: '+trafficLine(a)+'.'+(lg>0.0005?' Pengguna asli ikut tertahan: '+pct(lg)+'.':'')];}
+function showStage(i){stage=i;const s=stagesList()[i];const [t,x]=stageText(s);$('[data-st-title]',el).textContent=t;$('[data-st-text]',el).textContent=x;
+  $$('.lay',el).forEach((d,k)=>d.classList.toggle('cur',k===i));sim.running=i>0;if(sim.running)lp.kick();else sim.draw();}
+function renderFlow(){
+  const st=stagesList();const P0=R.steady.pressure(R.steady.t0);const tot=P0.vol+P0.syn+P0.http||1;
+  $('[data-flow]',el).innerHTML=st.map(s=>{const pa=R.steady.pressure(s.after);const bad=(pa.vol+pa.syn*(s.key==='syn'||st.slice(0,st.indexOf(s)).some(x=>x.key==='syn'&&x.on)?0:1)+pa.http)/tot;
+    const lg=(s.after.li+s.after.ln)/(LEGIT_IND+LEGIT_NAT);
+    const state=s.key==='net'?'sumber':s.key==='srv'?'tujuan':s.key==='pipe'?'jalur':s.on?'aktif':'mati';
+    return '<div class="lay'+(s.on||s.key==='net'||s.key==='srv'?'':' off')+'"><span class="st">'+state+'</span><span class="nm">'+s.name+'</span><div class="bars"><div class="b bad" title="tekanan serangan tersisa"><i style="width:'+clamp(Math.sqrt(bad)*100,0,100)+'%"></i></div><div class="b good" title="pengguna asli tersisa"><i style="width:'+clamp(lg*100,0,100)+'%"></i></div></div><span class="num">serangan <b>'+pct(clamp(bad,0,9.99))+'</b><br>asli <b>'+pct(lg)+'</b></span></div>';}).join('');
+  $$('.lay',el).forEach((d,k)=>d.classList.toggle('cur',k===stage));}
+function setKpi(k,v,frac,alert){const box=$('[data-k="'+k+'"]',el);$('.v',box).textContent=v;const f=$('.fill',box);if(f)f.style.width=clamp(frac||0,0,1)*100+'%';box.classList.toggle('alert',!!alert);}
+function refresh(){R=evaluate(scen,cfg);renderFlow();
+  setKpi('avail',pct(R.availability),R.availability,R.availability<.9);setKpi('served',pct(R.steady.served),R.steady.served,R.steady.served<.9);
+  setKpi('fp',pct(R.steady.fp),0,R.steady.fp>.05);setKpi('cost',used()+' / '+BUDGET+' poin');
+  if(stage>=stagesList().length)stage=stagesList().length-1;showStage(stage);player.render();}
+
+/* ---------- evaluation ---------- */
+$('[data-act=evaluate]',el).addEventListener('click',()=>{
+  const none=evaluate(scen,{on:{},wafmode:'js',rlt:150});const me=R;const m=me.steady;
+  const st=m.stages;const P0=m.pressure(m.t0);const keys=['vol','syn','http'];
+  const work=st.filter(s=>s.on&&!['net','srv','pipe'].includes(s.key)).map(s=>{const a=m.pressure(s.before),b=m.pressure(s.after);let w=0;keys.forEach(k=>{if(P0[k]>0)w+=(a[k]-b[k])/P0[k]*(P0[k]>1?1:.3);});if(s.key==='syn'&&P0.syn>0)w+=1;return {s,w};}).sort((a,b)=>b.w-a.w);
+  const heavy=work.length&&work[0].w>0?work[0].s.name:null;
+  const gaps=[];
+  if(P0.vol>0&&!cfg.on.scrub)gaps.push('Banjir volumetrik memenuhi pipa 10 Gbps sebelum lapisan lain bekerja. Hanya scrubbing di hulu yang bisa menahannya; firewall lokal datang terlambat.');
+  if(P0.syn>0&&!cfg.on.syn)gaps.push('Tanpa SYN Cookies, SYN palsu yang tersisa memenuhi tabel koneksi sehingga koneksi baru pengguna asli ditolak.');
+  if(P0.http>0&&!cfg.on.waf)gaps.push('Tanpa WAF, bot HTTP yang masing-masing "sopan" lolos. Rate limiting per IP saja tidak cukup melawan botnet yang tersebar.');
+  if(cfg.on.rl&&cfg.rlt<100)gaps.push('Batas rate limit '+cfg.rlt+'/detik lebih rendah dari trafik IP kampus bersama (100/detik), sehingga pengguna asli di balik NAT ikut terblokir.');
+  if(cfg.on.waf&&cfg.wafmode==='captcha')gaps.push('CAPTCHA menyaring lebih banyak bot, tetapi sekitar 7% pengguna asli menyerah karena repot.');
+  if(m.httpLoad>1&&cfg.on.waf)gaps.push('Web server masih menerima '+pct(m.httpLoad)+' dari kapasitasnya. Bot atau IP agresif yang tersisa perlu dipangkas, misalnya dengan Rate Limiting atau mode CAPTCHA. Dengan anggaran terbatas, Anda harus memilih: SOC untuk deteksi cepat, atau satu lapisan penyaring lagi.');
+  if(cfg.on.scrub&&!cfg.on.soc)gaps.push('Tanpa pemantauan SOC, scrubbing baru diaktifkan setelah 4 menit. Dengan SOC, pengalihan dimulai dalam 1 menit.');
+  const filters=Object.keys(cfg.on).filter(k=>cfg.on[k]&&k!=='soc').length;
+  const score=Math.round(clamp(me.availability*100-Math.max(0,m.fp-.02)*100,0,100));
+  const verdict=score>=90?'Pertahanan kokoh':score>=60?'Bertahan sebagian':'Layanan tumbang';
+  const col=(t,x)=>'<div class="col"><h5>'+t+'</h5><div class="row"><span>Ketersediaan 10 menit</span><b>'+pct(x.availability)+'</b></div><div class="row"><span>Pengguna asli terlayani</span><b>'+pct(x.steady.served)+'</b></div><div class="row"><span>False positive</span><b>'+pct(x.steady.fp)+'</b></div><div class="row"><span>Pipa terpakai</span><b>'+pct(x.steady.util)+'</b></div></div>';
+  $('[data-eval]',el).innerHTML='<div class="cmp">'+col('Tanpa pertahanan',none)+col('Konfigurasi Anda · '+used()+'/'+BUDGET+' poin',me)+'</div>'+
+    '<div class="verdict"><div class="score-ring" style="--p:'+score+'"><span>'+score+'</span></div><div><h4>'+verdict+' · '+SNAME[scen]+'</h4><p>'+(heavy?'Lapisan yang paling banyak bekerja: <strong>'+heavy+'</strong>. ':'Belum ada lapisan yang menahan serangan ini. ')+(filters===1&&scen==='multi'?'Satu lapisan tidak cukup untuk serangan multi-vektor: setiap vektor butuh penangkalnya sendiri. ':'')+'Skor = ketersediaan dikurangi penalti false positive di atas 2%.</p></div></div>'+
+    '<div class="lbl2" style="margin-top:18px">Umpan balik</div><ul class="fbl">'+(gaps.length?gaps.map(g=>'<li class="part"><span class="badge">'+icon('i-minus')+'</span><span>'+g+'</span></li>').join(''):'<li class="good"><span class="badge">'+icon('i-check')+'</span><span>Tidak ada celah besar untuk skenario ini.'+(scen!=='multi'?' Coba skenario multi-vektor dengan anggaran yang sama.':'')+'</span></li>')+'</ul>';});
+$('[data-act=reset]',el).addEventListener('click',()=>{cfg={on:{},wafmode:'js',rlt:150};$$('[data-l]',el).forEach(c=>{c.checked=false;c.closest('.chk').classList.remove('on');});$('[data-o=wafmode]',el).value='js';rl.value=150;rl.parentElement.querySelector('output').textContent='150';budgetMsg.textContent='';
+  scen='vol';$$('[data-scen]',el).forEach(x=>x.setAttribute('aria-pressed',x.dataset.scen==='vol'));$('[data-eval]',el).innerHTML='<p class="muted">Evaluasi membandingkan konfigurasi Anda dengan kondisi tanpa pertahanan.</p>';updBudget();player.stop();stage=0;refresh();});
+
+/* ---------- canvas: particles through gates ---------- */
+const cv=$('canvas',el);let parts=[],acc={},sparks=[];
+const cvs=makeCanvas(cv,()=>{parts=[];});
+const TYPES=['vol','syn','bot','aggr','legit'];
+function gates(){const st=stagesList().filter(s=>s.key!=='net'&&s.key!=='srv');const W=cvs.W;const x0=W*.12,x1=W*.86;return st.map((s,i)=>({s,x:x0+(x1-x0)*(i+.5)/st.length}));}
+function keep(s,type){const b=s.before,a=s.after;const f=type==='legit'?(a.li+a.ln)/Math.max(1e-9,b.li+b.ln):a[type]/Math.max(1e-9,b[type]);return isFinite(f)?clamp(f,0,1):1;}
+function present(type){const t=R.steady.t0;return type==='legit'?1:t[type]>0?1:0;}
+const sim={running:false,
+  step(dt){const {W,H}=cvs;if(!W||!R)return;const G=gates();const sp=Math.max(W*.24,140);
+    TYPES.forEach(ty=>{if(!present(ty))return;acc[ty]=(acc[ty]||0)+dt*(ty==='legit'?5:ty==='vol'?18:10);while(acc[ty]>=1){acc[ty]--;if(parts.length>380)continue;parts.push({ty,x:0,y:40+Math.random()*(H-62),v:sp*(.9+Math.random()*.2),g:0});}});
+    for(const p of parts){if(p.dead)continue;const ox=p.x;p.x+=p.v*dt;
+      while(p.g<G.length&&ox<G[p.g].x&&p.x>=G[p.g].x){const g=G[p.g];p.g++;if(Math.random()>keep(g.s,p.ty)){p.dead=true;sparks.push({x:g.x,y:p.y,life:.5});break;}}
+      if(p.x>=W*.9)p.dead=true;}
+    parts=parts.filter(p=>!p.dead);sparks.forEach(s=>s.life-=dt);sparks=sparks.filter(s=>s.life>0);},
+  draw(){const {ctx,W,H}=cvs;if(!W||!R)return;ctx.clearRect(0,0,W,H);const G=gates();ctx.textAlign='center';ctx.textBaseline='middle';
+    rrect(ctx,W*.9,30,W*.1-8,H-40,14);ctx.fillStyle=C.surface;ctx.fill();ctx.strokeStyle=R.steady.served<.9?C.strong:C.light;ctx.lineWidth=R.steady.served<.9?3:1.5;ctx.stroke();
+    ctx.save();ctx.translate(W*.95-4,H/2+8);ctx.rotate(-Math.PI/2);ctx.fillStyle=C.ink;ctx.font='700 12px system-ui,sans-serif';ctx.fillText('SERVER',0,0);ctx.restore();
+    G.forEach((g,i)=>{const on=g.s.on;const cur=stagesList().indexOf(g.s)===stage;
+      if(g.s.key==='pipe'){ctx.fillStyle=g.s.after.util>1?C.light:C.faint;ctx.globalAlpha=.6;ctx.fillRect(g.x-16,30,32,H-40);ctx.globalAlpha=1;}
+      ctx.strokeStyle=on?C.strong:C.light;ctx.lineWidth=cur?6:on?4:2;ctx.setLineDash(on?[]:[6,7]);ctx.beginPath();ctx.moveTo(g.x,30);ctx.lineTo(g.x,H-10);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=on?C.ink:C.muted;ctx.font=(cur?'800 ':'600 ')+'10.5px system-ui,sans-serif';const short={scrub:'Scrub',pipe:'Pipa',fw:'Firewall',ips:'IPS',syn:'SYN Ck',waf:'WAF',rl:'Rate lim'}[g.s.key];ctx.fillText(short,g.x,i%2?24:12);});
+    for(const p of parts){ctx.beginPath();
+      if(p.ty==='vol'){ctx.arc(p.x,p.y,4.8,0,7);ctx.fillStyle=C.strong;ctx.fill();}
+      else if(p.ty==='syn'){ctx.globalAlpha=.55;rrect(ctx,p.x-4,p.y-4,8,8,2);ctx.fillStyle=C.strong;ctx.fill();ctx.globalAlpha=1;}
+      else if(p.ty==='bot'){tri(ctx,p.x,p.y,5);ctx.fillStyle=C.mid;ctx.fill();}
+      else if(p.ty==='aggr'){ctx.arc(p.x,p.y,4.2,0,7);ctx.strokeStyle=C.mid;ctx.lineWidth=2.1;ctx.stroke();}
+      else{diamond(ctx,p.x,p.y,5.6);ctx.fillStyle=C.light;ctx.fill();ctx.strokeStyle=C.strong;ctx.lineWidth=1.2;ctx.stroke();}}
+    for(const s of sparks){ctx.globalAlpha=clamp(s.life/.5,0,1);ctx.strokeStyle=C.mid;ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(s.x,s.y,3+(.5-s.life)*14,0,7);ctx.stroke();}ctx.globalAlpha=1;}};
+cvs.after=()=>sim.draw();
+const lp=loop(sim,cv);themeHooks.push(()=>sim.draw());
+updBudget();refresh();player.go(0);
+
+/* ---------- matching exercise ---------- */
+const OPTS=['BGP Anycast Scrubbing','SYN Cookies & stateful tuning','WAF, rate limit & CAPTCHA','BCP 38 / uRPF','Blokir IP di firewall lokal'];
+const ROWS=[['Volumetrik (Gbps/Tbps), misalnya amplifikasi Memcached',0,'Banjir sebesar ini harus diserap di hulu sebelum memenuhi pipa korban.'],
+  ['Protokol (PPS), misalnya SYN Flood',1,'SYN Cookies mencegah tabel koneksi penuh oleh koneksi setengah terbuka.'],
+  ['Lapisan aplikasi (RPS), misalnya HTTP GET Flood dari bot',2,'WAF membaca isi permintaan dan menantang bot; rate limit membatasi IP yang terlalu rajin.'],
+  ['Paket dengan alamat pengirim palsu dari jaringan sumber',3,'Penyaringan ingress di ISP membuang paket palsu sebelum sempat keluar.']];
+const mbox=$('#match');
+mbox.innerHTML=ROWS.map((r,i)=>'<div class="mrow"><span id="mq'+i+'">'+r[0]+'</span><select aria-labelledby="mq'+i+'" data-m="'+i+'"><option value="">Pilih pertahanan…</option>'+OPTS.map((o,k)=>'<option value="'+k+'">'+o+'</option>').join('')+'</select><span class="res" data-mr="'+i+'" aria-live="polite"></span></div>').join('');
+$('[data-act=check-match]').addEventListener('click',()=>{let ok=0;ROWS.forEach((r,i)=>{const v=$('[data-m="'+i+'"]').value;const res=$('[data-mr="'+i+'"]');const good=v!==''&&+v===r[1];if(good)ok++;res.className='res '+(good?'ok':'no');res.innerHTML=icon(good?'i-check':'i-x');res.title=good?r[2]:'Belum tepat. '+r[2];});
+  $('[data-matchres]').textContent=ok+' dari '+ROWS.length+' benar. '+(ok<ROWS.length?'Arahkan kursor atau fokus ke tanda silang untuk petunjuk; "Blokir IP di firewall lokal" tidak pernah menjadi jawaban utama.':'Sempurna.');});
+
+/* ---------- quiz ---------- */
+quiz($('#quiz2'),[
+ ['Mengapa memblokir IP pada firewall lokal tidak efektif menahan DDoS volumetrik?',['Firewall lokal tidak bisa membaca IP','Pipa ISP sudah penuh sebelum paket sampai ke firewall, dan alamatnya banyak serta sering palsu','DDoS volumetrik selalu memakai HTTPS','Firewall hanya bekerja di Layer 7'],1,'Kemacetan terjadi di pipa sebelum firewall; penyaringan harus dilakukan di hulu.'],
+ ['Pertahanan utama untuk serangan protokol (PPS) seperti SYN Flood adalah…',['CAPTCHA','SYN Cookies & stateful tuning','Scrubbing saja','Mematikan DNS'],1,'SYN Cookies mencegah RAM tabel koneksi habis oleh koneksi setengah terbuka.'],
+ ['Apa kelemahan utama rate limiting per IP?',['Tidak bisa dipasang di Nginx','Botnet ribuan IP yang masing-masing mengirim sedikit permintaan tetap lolos','Membuat koneksi terenkripsi','Hanya bekerja untuk UDP'],1,'Batasnya per IP, jadi setiap bot yang "sopan" terlihat normal.'],
+ ['Mengapa CAPTCHA tidak selalu lebih baik daripada JS Challenge?',['CAPTCHA tidak bisa memblokir bot','CAPTCHA menambah repot sehingga sebagian pengguna asli menyerah (false positive)','CAPTCHA hanya untuk UDP','CAPTCHA membuat pipa penuh'],1,'Tantangan yang lebih ketat menahan lebih banyak bot, tetapi juga mengganggu manusia.'],
+ ['Dalam kasus GitHub 2018, apa yang memulihkan layanan dalam sekitar 9 menit?',['Memblokir IP penyerang satu per satu','Mengalihkan trafik ke penyedia mitigasi (scrubbing)','Mematikan server','Mengganti password admin'],1,'GitHub merutekan trafiknya ke Akamai, yang menyaring banjir 1,35 Tbps di jaringannya.'],
+ ['Satuan ukur serangan lapisan aplikasi adalah…',['Gbps','PPS','RPS (permintaan per detik)','Byte per jam'],2,'Volumetrik diukur Gbps/Tbps, protokol PPS, dan lapisan aplikasi RPS.']],$('[data-scorebar]'));
+})();
+</script>
+</body>
+</html>
