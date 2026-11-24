@@ -1,0 +1,9 @@
+.DS_Store
+Thumbs.db
+*.pdf
+*.pptx
+.claude/
+.vscode/
+.idea/
+node_modules/
+*.log
