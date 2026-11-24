@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EHE Network Level Attacks · Hub Proyek</title>
+<meta name="description" content="Tiga website pembelajaran interaktif dan simulator Ethical Hacking Essentials Modul 7: UDP Flood &amp; Port Exhaustion, Strategi Mitigasi DDoS Berlapis, dan Anatomi Serangan SSL Stripping.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2313315c'/%3E%3Cpath d='M6 13c3-3 6-3 10 0s7 3 10 0M6 20c3-3 6-3 10 0s7 3 10 0' stroke='%23bfd7f1' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/ehe.css">
+</head>
+<body data-site="Hub EHE">
+<a class="skip" href="#main">Lompat ke konten</a>
+<div id="progress" aria-hidden="true"></div>
+<div class="content" style="margin:0 auto">
+  <div class="topbar">
+    <a class="logo" href="index.html" style="flex-direction:row;gap:10px;margin:0;font-size:.95rem"><svg viewBox="0 0 44 30" aria-hidden="true"><path d="M3 11c6-6 12-6 19 0s13 6 19 0M3 20c6-6 12-6 19 0s13 6 19 0" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg>EHE · Modul 7</a>
+    <div class="bar-right"><button class="roundbtn" id="themeBtn" aria-label="Ganti mode terang atau gelap"><svg class="ic"><use href="#i-contrast"/></svg></button></div>
+  </div>
+  <main id="main" tabindex="-1">
+    <div class="bento">
+      <div class="s8"><header class="hero">
+        <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-night" width="600" height="400"/></svg>
+        <div class="hero-in">
+          <span class="eyebrow">Ethical Hacking Essentials · Network Level Attacks</span>
+          <h1>Belajar sambil mencoba</h1>
+          <span class="k">Tentang proyek</span>
+          <p class="lead">Tiga website pembelajaran interaktif sekaligus simulator. Masing-masing menjelaskan konsep, proses, dan pertahanan satu topik, lalu mengajak Anda menjalankan skenario, mengatur parameter, memilih penanggulangan, dan melihat evaluasinya.</p>
+          <a class="pill" href="#topik">Pilih topik <svg class="ic sm"><use href="#i-arrow"/></svg></a>
+        </div></header></div>
+      <div class="s4 stack">
+        <div class="tile stat"><svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-globe" width="600" height="400"/></svg>
+          <span class="big">3 situs</span><span class="lbl">masing-masing dengan 6 komponen tugas</span><span class="chipw"><svg class="ic sm"><use href="#i-sim"/></svg>Pembelajaran + simulator</span></div>
+        <div class="tile"><h3 class="th">Mata kuliah</h3><p style="margin:0"><strong>Cyber Security (IMT01307502)</strong><br>Program Studi Informatika, Universitas Ciputra<br>Semester Ganjil 2026/2027</p></div>
+      </div>
+    </div>
+
+    <div class="rowhead" id="topik" style="display:flex;justify-content:space-between;align-items:flex-end;margin:46px 0 18px;scroll-margin-top:20px"><div><h2 class="serif" style="font-size:2rem">Tiga topik</h2><p class="muted" style="margin:4px 0 0">Dua serangan dan satu strategi pertahanan.</p></div></div>
+    <div class="hubcards">
+      <a class="hcard" href="udp-flood/index.html"><span class="img"><svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-flood" width="600" height="400"/></svg></span>
+        <span class="tx"><small>Topik 1 · Serangan</small><h3>UDP Flood &amp; Port Exhaustion</h3><p>Banjiri port acak 1–65535 dengan paket palsu, dan lihat kapan server tumbang karena pipa penuh atau CPU habis. Simulator: 6 skenario, termasuk amplifikasi DNS, NTP, dan Memcached.</p></span>
+        <span class="go">Buka situs <svg class="ic sm"><use href="#i-arrow"/></svg></span></a>
+      <a class="hcard" href="mitigasi-ddos-berlapis/index.html"><span class="img"><svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-layers" width="600" height="400"/></svg></span>
+        <span class="tx"><small>Topik 2 · Pertahanan</small><h3>Strategi Mitigasi DDoS Berlapis</h3><p>Jadi pembela dengan anggaran terbatas: pasang scrubbing, WAF, rate limit, SYN Cookies, IPS, dan SOC, lalu ukur ketersediaan dan false positive di empat jenis serangan.</p></span>
+        <span class="go">Buka situs <svg class="ic sm"><use href="#i-arrow"/></svg></span></a>
+      <a class="hcard" href="ssl-stripping/index.html"><span class="img"><svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-ssl" width="600" height="400"/></svg></span>
+        <span class="tx"><small>Topik 3 · Serangan</small><h3>Anatomi Serangan SSL Stripping</h3><p>Ikuti diagram urutan korban, penyerang, dan server, temukan tanda bahaya di browser, lalu lihat di titik mana HSTS, preload, atau VPN menghentikan serangan.</p></span>
+        <span class="go">Buka situs <svg class="ic sm"><use href="#i-arrow"/></svg></span></a>
+    </div>
+
+    <div class="rowhead" style="display:flex;justify-content:space-between;align-items:flex-end;margin:46px 0 18px"><div><h2 class="serif" style="font-size:2rem">Kelompok</h2></div></div>
+    <div class="members">
+      <div class="member"><b>Jefferson Jap</b><span>NIM 0706012410072</span></div>
+      <div class="member"><b>Vincent</b><span>NIM 0706012410032</span></div>
+      <div class="member"><b>Rifki Indra Nugroho</b><span>NIM 0706012410033</span></div>
+      <div class="member"><b>Precious Nathan</b><span>NIM 0706012410027</span></div>
+    </div>
+
+    <div class="article"><div class="chapter"><div class="chead"><span class="no">01</span><h2>Komponen tugas</h2></div><div class="body">
+      <p>Setiap situs memiliki enam komponen yang sama, dalam urutan yang sama di navigasi: <strong>Pengantar Topik</strong>, <strong>Penjelasan Konsep</strong>, <strong>Proses Bertahap</strong>, <strong>Simulasi Interaktif</strong>, <strong>Penanggulangan Keamanan</strong>, dan <strong>Referensi</strong>. Peta lengkap per situs ada di halaman Referensi masing-masing dan di README repositori.</p>
+    </div></div>
+    <div class="chapter"><div class="chead"><span class="no">02</span><h2>Etika</h2></div><div class="body">
+      <div class="ethics"><svg class="ic"><use href="#i-scale"/></svg><p>Semua simulator hanya model visual dengan angka buatan, domain fiktif, dan kredensial palsu; tidak ada trafik jaringan sungguhan dan tidak ada alat serangan. Teknik yang dibahas hanya boleh dipelajari dan diuji di lab yang diizinkan. Mengakses atau mengganggu sistem elektronik orang lain tanpa hak adalah tindak pidana menurut UU ITE (UU No. 11 Tahun 2008 beserta perubahannya, termasuk UU No. 1 Tahun 2024).</p></div>
+    </div></div></div>
+  </main>
+  <footer class="foot">
+    <span><b>Cyber Security (IMT01307502)</b> · Informatika, Universitas Ciputra · Modul 7: Network Level Attacks</span>
+    <span>Kelompok: Jefferson Jap (NIM 0706012410072) · Vincent (NIM 0706012410032) · Rifki Indra Nugroho (NIM 0706012410033) · Precious Nathan (NIM 0706012410027)</span>
+  </footer>
+</div>
+<button class="roundbtn" id="toTop" aria-label="Kembali ke atas"><svg class="ic"><use href="#i-up"/></svg></button>
+<script src="assets/ehe.js"></script>
+</body>
+</html>
