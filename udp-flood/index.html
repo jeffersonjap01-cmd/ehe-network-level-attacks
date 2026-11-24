@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UDP Flood &amp; Port Exhaustion · Simulator EHE</title>
+<meta name="description" content="Website pembelajaran interaktif dan simulator UDP Flood &amp; Port Exhaustion: konsep, proses bertahap, simulasi serangan volumetrik, penanggulangan, dan referensi.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2313315c'/%3E%3Cpath d='M6 13c3-3 6-3 10 0s7 3 10 0M6 20c3-3 6-3 10 0s7 3 10 0' stroke='%23bfd7f1' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/ehe.css">
+</head>
+<body data-site="Simulator UDP Flood">
+<a class="skip" href="#main">Lompat ke konten</a>
+<div id="progress" aria-hidden="true"></div>
+<div class="app">
+  <aside class="side" aria-label="Navigasi komponen">
+    <a class="logo" href="../index.html" aria-label="Kembali ke hub proyek"><svg viewBox="0 0 44 30" aria-hidden="true"><path d="M3 11c6-6 12-6 19 0s13 6 19 0M3 20c6-6 12-6 19 0s13 6 19 0" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg>EHE</a>
+    <a class="navbtn" href="#pengantar" data-nav="pengantar"><span class="no">1</span><svg class="ic"><use href="#i-intro"/></svg>Pengantar</a>
+    <a class="navbtn" href="#konsep" data-nav="konsep"><span class="no">2</span><svg class="ic"><use href="#i-concept"/></svg>Konsep</a>
+    <a class="navbtn" href="#proses" data-nav="proses"><span class="no">3</span><svg class="ic"><use href="#i-steps"/></svg>Proses</a>
+    <a class="navbtn" href="#simulasi" data-nav="simulasi"><span class="no">4</span><svg class="ic"><use href="#i-sim"/></svg>Simulasi</a>
+    <a class="navbtn" href="#pertahanan" data-nav="pertahanan"><span class="no">5</span><svg class="ic"><use href="#i-shield"/></svg>Pertahanan</a>
+    <a class="navbtn" href="#referensi" data-nav="referensi"><span class="no">6</span><svg class="ic"><use href="#i-refs"/></svg>Referensi</a>
+  </aside>
+  <div class="content">
+    <div class="topbar">
+      <div class="crumb"><a href="../index.html">Hub</a><svg class="ic sm"><use href="#i-chev"/></svg><span>UDP Flood</span><svg class="ic sm"><use href="#i-chev"/></svg><b id="crumbHere"></b></div>
+      <div class="bar-right">
+        <details class="menu"><summary><svg class="ic sm"><use href="#i-grid"/></svg>Topik lain<svg class="ic sm"><use href="#i-down"/></svg></summary>
+          <div class="drop">
+            <a href="../index.html"><svg class="ic"><use href="#i-home"/></svg><span><b>Hub proyek</b>Semua topik dan anggota</span></a>
+            <a href="../mitigasi-ddos-berlapis/index.html"><svg class="ic"><use href="#i-layers"/></svg><span><b>Mitigasi DDoS Berlapis</b>Simulator pertahanan</span></a>
+            <a href="../ssl-stripping/index.html"><svg class="ic"><use href="#i-unlock"/></svg><span><b>SSL Stripping</b>Simulator MitM</span></a>
+          </div></details>
+        <button class="roundbtn" id="themeBtn" aria-label="Ganti mode terang atau gelap"><svg class="ic"><use href="#i-contrast"/></svg></button>
+      </div>
+    </div>
+    <main id="main" tabindex="-1">
+
+<!-- ================= 1. PENGANTAR ================= -->
+<section class="page" data-page="pengantar" data-title="Pengantar Topik" aria-labelledby="h1-1">
+  <div class="bento">
+    <div class="s8"><header class="hero">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-flood" width="600" height="400"/></svg>
+      <div class="hero-in">
+        <span class="eyebrow">Komponen 1 · Pengantar Topik</span>
+        <h1 id="h1-1">UDP Flood</h1>
+        <div class="sub">&amp; Port Exhaustion</div>
+        <span class="k">Intinya</span>
+        <p class="lead">UDP Flood adalah serangan yang membanjiri server dengan paket UDP palsu ke nomor port acak. Server sibuk memeriksa setiap port dan membalas "tidak ada aplikasi di sini", sampai tidak sanggup lagi melayani pengguna asli <a class="cite" href="#ref-1">[1]</a>.</p>
+        <a class="pill" href="#simulasi">Langsung ke simulator <svg class="ic sm"><use href="#i-arrow"/></svg></a>
+      </div></header></div>
+    <div class="s4 stack">
+      <div class="tile stat"><svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-night" width="600" height="400"/></svg>
+        <span class="big">1–65535</span><span class="lbl">rentang port yang dibanjiri secara acak</span><span class="chipw"><svg class="ic sm"><use href="#i-wave"/></svg>Serangan volumetrik · Layer 4</span></div>
+      <nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+        <li><a href="#p1-def">Definisi</a></li><li><a href="#p1-tujuan">Tujuan mempelajari</a></li><li><a href="#p1-relevansi">Relevansi keamanan siber</a></li><li><a href="#p1-etika">Etika</a></li></ol></nav>
+    </div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="p1-def"><div class="chead"><span class="no">01</span><h2>Definisi</h2></div><div class="body">
+      <p class="lede">UDP Flood adalah serangan <em>volumetrik</em>: tujuannya bukan mencuri data, melainkan menenggelamkan layanan dalam paket sampai tidak bisa dipakai.</p>
+      <p><strong>UDP</strong> (User Datagram Protocol) adalah aturan pengiriman data yang ringan: data langsung dikirim tanpa "berkenalan" dulu dan tanpa jaminan sampai <a class="cite" href="#ref-4">[4]</a>. <strong>Port</strong> adalah nomor "pintu" layanan di sebuah komputer, dari 1 sampai 65535 <a class="cite" href="#ref-3">[3]</a>. Penyerang menembakkan paket UDP berukuran besar ke port-port acak itu. Untuk setiap paket, server memeriksa apakah ada aplikasi yang menunggu di port tersebut. Karena hampir selalu kosong, server membalas dengan pesan <strong>ICMP Destination Unreachable</strong>, pesan kendali yang berarti "tujuan tidak dapat dijangkau" <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-5">[5]</a>.</p>
+      <p><strong>Port Exhaustion</strong> menggambarkan akibatnya: seluruh rentang port dibanjiri, sehingga kemampuan server untuk memeriksa dan membalas di port-portnya habis. Yang habis adalah tenaga dan jalur internet server, bukan port-nya yang rusak.</p>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Resepsionis apartemen yang kebanjiran surat</span><p>Sebuah gedung punya 65.535 kamar, tetapi hanya beberapa yang berpenghuni. Datang ribuan surat palsu ke nomor kamar acak. Resepsionis wajib mengecek setiap surat, "Kamar 48.213, ada penghuninya? Tidak," lalu menulis balasan "penghuni tidak ditemukan". Selama ia sibuk, tamu sungguhan di lobi tidak pernah dilayani.</p></figure>
+    </div></div>
+    <div class="chapter" id="p1-tujuan"><div class="chead"><span class="no">02</span><h2>Tujuan mempelajari</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Memahami mekanisme</strong> mengapa protokol tanpa handshake bisa dipakai untuk melumpuhkan server.</li>
+        <li><strong>Membedakan</strong> kapan server tumbang karena jalur internetnya penuh dan kapan karena CPU-nya kehabisan tenaga, karena penangkalnya berbeda.</li>
+        <li><strong>Mengenali tanda-tanda</strong> serangan di pusat pemantauan keamanan, sehingga bisa bertindak cepat.</li>
+        <li><strong>Memilih pertahanan yang tepat</strong>, dan tahu mengapa sebagian solusi yang terdengar masuk akal ternyata tidak efektif.</li>
+      </ul>
+    </div></div>
+    <div class="chapter" id="p1-relevansi"><div class="chead"><span class="no">03</span><h2>Relevansi keamanan siber</h2></div><div class="body">
+      <p>Keamanan informasi punya tiga pilar, yang disebut <strong>CIA Triad</strong>: kerahasiaan (<em>confidentiality</em>), keutuhan (<em>integrity</em>), dan ketersediaan (<em>availability</em>). UDP Flood menyerang pilar ketiga: layanan tidak bisa dipakai oleh pengguna sah <a class="cite" href="#ref-1">[1]</a>.</p>
+      <ul class="clean">
+        <li><strong>Kerugian bisnis.</strong> Transaksi e-commerce dan pembayaran berhenti, ada penalti SLA (perjanjian jaminan ketersediaan layanan), dan biaya darurat jasa mitigasi <a class="cite" href="#ref-1">[1]</a>.</li>
+        <li><strong>Tabir asap.</strong> DDoS bisa dipakai untuk mengalihkan perhatian tim keamanan sementara penyerang mencuri data di tempat lain <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-9">[9]</a>.</li>
+        <li><strong>Mudah dilakukan.</strong> Perangkat IoT yang tidak aman dan server publik yang salah konfigurasi membuat banjir raksasa bisa dibuat dengan modal kecil <a class="cite" href="#ref-8">[8]</a><a class="cite" href="#ref-10">[10]</a>.</li>
+      </ul>
+    </div></div>
+    <div class="chapter" id="p1-etika"><div class="chead"><span class="no">04</span><h2>Etika</h2></div><div class="body">
+      <div class="ethics"><svg class="ic"><use href="#i-scale"/></svg><p>Simulator di situs ini hanya model visual dengan angka buatan; tidak ada trafik jaringan sungguhan. Teknik serangan hanya boleh dipelajari dan diuji di lab yang diizinkan, misalnya mesin latihan yang Anda jalankan sendiri <a class="cite" href="#ref-3">[3]</a>. Mengakses atau mengganggu sistem elektronik orang lain tanpa hak adalah tindak pidana menurut UU ITE <a class="cite" href="#ref-12">[12]</a><a class="cite" href="#ref-13">[13]</a>.</p></div>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>UDP Flood membanjiri port acak 1–65535 dengan paket UDP palsu berukuran besar.</li>
+    <li>Server memeriksa port, tidak menemukan aplikasi, lalu membalas ICMP Destination Unreachable.</li>
+    <li>Siklus itu menguras server sampai tidak responsif; yang diserang adalah ketersediaan.</li>
+    <li>Pelajari hanya di lab yang diizinkan.</li></ol></div>
+  <nav class="pager" aria-label="Komponen berikutnya"><a class="nx" href="#konsep"><span><small>Komponen 2</small><b>Penjelasan Konsep</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 2. KONSEP ================= -->
+<section class="page" data-page="konsep" data-title="Penjelasan Konsep" aria-labelledby="h1-2">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-globe" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 2 · Penjelasan Konsep</span><h1 id="h1-2">Cara kerjanya</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">UDP tidak punya proses kenalan, jadi server harus memproses setiap paket yang datang. Botnet, alamat palsu, dan amplifikasi membuat jumlah paket itu jauh melebihi kemampuan server.</p></div></header></div>
+    <div class="s4 stack"><nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+      <li><a href="#k-cara">Mengapa UDP rentan</a></li><li><a href="#k-komponen">Komponen &amp; teknologi</a></li><li><a href="#k-amplifikasi">Refleksi &amp; amplifikasi</a></li><li><a href="#k-kasus">Contoh kasus: Mirai</a></li><li><a href="#k-risiko">Ancaman terkait</a></li></ol></nav></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="k-cara"><div class="chead"><span class="no">01</span><h2>Mengapa UDP rentan</h2></div><div class="body">
+      <p>UDP bersifat <strong>connectionless</strong> (tidak membangun sambungan lebih dulu) dan <strong>tidak memiliki otentikasi handshake</strong> <a class="cite" href="#ref-1">[1]</a>. Standarnya sendiri menyebut UDP sebagai mekanisme minimal yang tidak menjamin pengiriman maupun perlindungan duplikasi <a class="cite" href="#ref-4">[4]</a>. Bandingkan dengan TCP, yang wajib berkenalan tiga langkah:</p>
+      <div class="vsgrid">
+        <div class="tile"><h4>TCP · kenalan dulu</h4>
+          <svg viewBox="0 0 300 190" role="img" aria-label="TCP: klien mengirim SYN, server membalas SYN/ACK, klien membalas ACK, lalu data dikirim."><g font-family="system-ui,sans-serif" font-size="11.5">
+            <text x="40" y="16" text-anchor="middle" font-weight="700" fill="var(--ink)">Klien</text><text x="260" y="16" text-anchor="middle" font-weight="700" fill="var(--ink)">Server</text>
+            <line x1="40" y1="24" x2="40" y2="186" stroke="var(--line)" stroke-width="2"/><line x1="260" y1="24" x2="260" y2="186" stroke="var(--line)" stroke-width="2"/>
+            <g stroke="var(--b400)" stroke-width="2" fill="var(--b400)"><line x1="44" y1="44" x2="250" y2="56"/><path d="M252 56l-9-5v10z" stroke="none"/><line x1="256" y1="82" x2="50" y2="94"/><path d="M48 94l9-5v10z" stroke="none"/><line x1="44" y1="120" x2="250" y2="132"/><path d="M252 132l-9-5v10z" stroke="none"/></g>
+            <g fill="var(--text)" text-anchor="middle"><text x="150" y="43">1 · SYN "Boleh bicara?"</text><text x="150" y="81">2 · SYN/ACK "Boleh, siapa ini?"</text><text x="150" y="119">3 · ACK "Oke, mulai."</text></g>
+            <line x1="44" y1="166" x2="250" y2="174" stroke="var(--b700)" stroke-width="3.5" class="flowline"/><path d="M252 174l-9-5v10z" fill="var(--b700)"/><text x="150" y="160" text-anchor="middle" font-weight="700" fill="var(--ink)">Data dikirim</text></g></svg>
+          <p>Server baru melayani setelah ada balasan yang membuktikan pengirimnya ada <a class="cite" href="#ref-1">[1]</a>.</p></div>
+        <div class="tile"><h4>UDP · langsung kirim</h4>
+          <svg viewBox="0 0 300 190" role="img" aria-label="UDP: pengirim langsung menembakkan banyak paket ke berbagai port server tanpa perkenalan."><g font-family="system-ui,sans-serif" font-size="11.5">
+            <text x="40" y="16" text-anchor="middle" font-weight="700" fill="var(--ink)">Pengirim</text><text x="260" y="16" text-anchor="middle" font-weight="700" fill="var(--ink)">Server</text>
+            <line x1="40" y1="24" x2="40" y2="186" stroke="var(--line)" stroke-width="2"/><line x1="260" y1="24" x2="260" y2="186" stroke="var(--line)" stroke-width="2"/>
+            <g stroke="var(--b700)" stroke-width="3.5" fill="var(--b700)"><line x1="44" y1="48" x2="250" y2="54" class="flowline"/><path d="M252 54l-9-5v10z" stroke="none"/><line x1="44" y1="84" x2="250" y2="90" class="flowline"/><path d="M252 90l-9-5v10z" stroke="none"/><line x1="44" y1="120" x2="250" y2="126" class="flowline"/><path d="M252 126l-9-5v10z" stroke="none"/><line x1="44" y1="156" x2="250" y2="162" class="flowline"/><path d="M252 162l-9-5v10z" stroke="none"/></g>
+            <g fill="var(--text)" text-anchor="middle"><text x="150" y="42">data → port 53</text><text x="150" y="78">data → port 4.712</text><text x="150" y="114">data → port 61.009</text><text x="150" y="150">data → port 27.330</text></g></g></svg>
+          <p>Tidak ada salam dan tidak ada pemeriksaan pengirim. Setiap paket wajib diproses <a class="cite" href="#ref-4">[4]</a>.</p></div>
+      </div>
+      <div class="note"><svg class="ic"><use href="#i-alert"/></svg><p><span class="k">Salah kaprah: "UDP itu protokol yang buruk."</span> Tidak. UDP sengaja dibuat ringan dan sangat berguna untuk DNS (port 53), NTP (123), SNMP (161), atau panggilan video <a class="cite" href="#ref-3">[3]</a>. Masalahnya ada pada tidak adanya pemeriksaan pengirim, yang dimanfaatkan penyerang.</p></div>
+    </div></div>
+    <div class="chapter" id="k-komponen"><div class="chead"><span class="no">02</span><h2>Komponen &amp; teknologi</h2></div><div class="body">
+      <div class="defs">
+        <div><h4>Paket UDP buatan</h4><p>Paket berukuran besar yang isinya tidak berguna, dikirim ke port acak 1–65535 <a class="cite" href="#ref-1">[1]</a>.</p></div>
+        <div><h4>Port dan kernel server</h4><p>Sistem operasi memeriksa apakah ada program yang "mendengarkan" di port tujuan. Pemeriksaan ini terjadi untuk setiap paket <a class="cite" href="#ref-7">[7]</a>.</p></div>
+        <div><h4>ICMP Destination Unreachable</h4><p>Pesan ICMP tipe 3; kode 3 berarti <em>port unreachable</em>, dikirim host saat tidak ada aplikasi di port itu <a class="cite" href="#ref-5">[5]</a>.</p></div>
+        <div><h4>Bandwidth</h4><p>Lebar "pipa" koneksi internet, diukur dalam Gbps (gigabit per detik) atau Tbps. Serangan volumetrik berusaha memenuhinya <a class="cite" href="#ref-1">[1]</a>.</p></div>
+        <div><h4>Botnet dan C2</h4><p><strong>Botnet</strong> adalah ribuan perangkat terinfeksi yang dikendalikan dari jauh. <strong>Botmaster</strong> memberi perintah lewat server <strong>C2</strong> (Command &amp; Control) berbasis HTTP, IRC, atau P2P kepada pasukan zombie <a class="cite" href="#ref-1">[1]</a>.</p></div>
+        <div><h4>IP spoofing</h4><p>Memalsukan kolom alamat pengirim di kepala paket, untuk menyembunyikan identitas atau mengarahkan balasan ke korban <a class="cite" href="#ref-2">[2]</a>.</p></div>
+      </div>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Alamat pengirim palsu di amplop</span><p>Siapa pun bisa menulis alamat pengirim sembarangan di belakang amplop. Kantor pos tidak memeriksanya, dan balasan akan dikirim ke alamat palsu itu, bukan ke si pengirim asli.</p></figure>
+    </div></div>
+    <div class="chapter" id="k-amplifikasi"><div class="chead"><span class="no">03</span><h2>Refleksi &amp; amplifikasi</h2></div><div class="body">
+      <p><strong>Refleksi:</strong> penyerang tidak mengirim paket langsung ke korban. Ia mengirim permintaan ke server publik (<em>reflector</em>) dengan alamat pengirim dipalsukan menjadi alamat korban <a class="cite" href="#ref-1">[1]</a>. <strong>Amplifikasi:</strong> permintaannya kecil, tetapi balasannya raksasa. Dengan cara ini, bandwidth penyerang sebesar 10 Mbps bisa menjadi banjir 500 Mbps ke korban <a class="cite" href="#ref-1">[1]</a>.</p>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Kartu pos "kirimi saya katalog lengkap"</span><p>Penyerang mengirim kartu pos kecil ke ribuan toko berisi permintaan katalog, tetapi alamat pengirimnya ditulis alamat rumah korban. Rumah korban tertimbun katalog tebal, padahal penyerang hanya membayar ongkos kartu pos.</p></figure>
+      <div class="tbl"><table>
+        <thead><tr><th>Layanan</th><th>Cara disalahgunakan</th><th>Faktor (materi kuliah)</th><th>BAF menurut CISA</th></tr></thead>
+        <tbody>
+          <tr><td><strong>DNS</strong> · UDP 53</td><td>Query <code>ANY</code>/<code>TXT</code> dengan EDNS0 ke resolver terbuka: ±60–64 byte menjadi 3.000+ byte <a class="cite" href="#ref-1">[1]</a></td><td class="em">±50×</td><td>28–54×</td></tr>
+          <tr><td><strong>NTP</strong> · UDP 123</td><td>Perintah <code>monlist</code> mengembalikan daftar 600 IP terakhir yang menghubungi server <a class="cite" href="#ref-1">[1]</a></td><td class="em">±200×</td><td>556,9×</td></tr>
+          <tr><td><strong>Memcached</strong> · UDP 11211</td><td>Server cache publik membalas berukuran megabyte dari permintaan beberapa byte <a class="cite" href="#ref-1">[1]</a></td><td class="em">hingga 50.000×</td><td>10.000–51.000×</td></tr>
+        </tbody></table></div>
+      <p class="muted small">BAF (Bandwidth Amplification Factor) adalah perbandingan ukuran balasan terhadap ukuran permintaan. Angkanya berbeda antarsumber karena bergantung pada konfigurasi server dan cara pengukuran; simulator di situs ini memakai angka materi kuliah <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-8">[8]</a>.</p>
+    </div></div>
+    <div class="chapter" id="k-kasus"><div class="chead"><span class="no">04</span><h2>Contoh kasus: Mirai</h2></div><div class="body">
+      <p class="lede">Mirai mengubah kamera IP dan router rumahan menjadi pasukan DDoS.</p>
+      <p>Mirai memindai alamat IP publik di port Telnet (23 dan 2323) dan mencoba kamus berisi 60 kombinasi <em>password</em> bawaan pabrik. Perangkat IoT yang tidak pernah diganti password-nya langsung terinfeksi dan menjadi "tentara" DDoS <a class="cite" href="#ref-1">[1]</a>. Studi retrospektif tujuh bulan yang dipresentasikan di USENIX Security 2017 mencatat pertumbuhan Mirai hingga puncak sekitar 600 ribu infeksi <a class="cite" href="#ref-10">[10]</a>.</p>
+      <p>Botnet modern juga memakai <strong>DGA</strong> (Domain Generation Algorithm): ribuan nama domain C2 dibuat acak setiap hari berdasarkan tanggal sistem, sehingga pusat kendalinya sulit dimatikan <a class="cite" href="#ref-1">[1]</a>.</p>
+      <div class="note"><svg class="ic"><use href="#i-shield"/></svg><p><span class="k">Pelajaran.</span> Ganti password bawaan router, kamera CCTV, dan perangkat pintar. Perangkat dengan password pabrik adalah bahan baku botnet.</p></div>
+    </div></div>
+    <div class="chapter" id="k-risiko"><div class="chead"><span class="no">05</span><h2>Ancaman terkait</h2></div><div class="body">
+      <p>Serangan DoS terbagi dua keluarga. <strong>Bandwidth Saturation</strong> menjenuhkan pipa data; contohnya ICMP Flood, UDP Flood, dan DNS Amplification. <strong>Resource Exhaustion</strong> menguras RAM dan CPU dengan cara yang lebih "cerdik", misalnya SYN Flood dan Slowloris <a class="cite" href="#ref-1">[1]</a>.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Serangan</th><th>Layer</th><th>Cara kerja</th><th>Yang dihabiskan</th><th>Satuan</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>UDP Flood</td><td>4</td><td>Paket UDP besar ke port acak, dibalas ICMP Destination Unreachable</td><td>Bandwidth, CPU</td><td>Gbps / Tbps</td></tr>
+          <tr><td>ICMP Flood</td><td>3</td><td>Banjir ICMP Echo Request besar; server dipaksa membalas Echo Reply</td><td>Bandwidth, CPU</td><td>Gbps / Tbps</td></tr>
+          <tr><td>Smurf</td><td>3</td><td>Ping ke alamat broadcast dengan IP korban dipalsukan; semua host membalas ke korban</td><td>Bandwidth korban</td><td>Gbps</td></tr>
+          <tr><td>SYN Flood</td><td>4</td><td>Ribuan SYN palsu; antrean koneksi setengah terbuka penuh</td><td>RAM tabel koneksi</td><td>Paket/detik</td></tr>
+        </tbody></table></div>
+      <p class="muted small">Sumber tabel: <a class="cite" href="#ref-1">[1]</a>. Sebagai pembanding, CISA mendaftar gejala umum DoS: jaringan sangat lambat, situs tertentu tidak bisa diakses, atau tidak bisa mengakses situs apa pun <a class="cite" href="#ref-9">[9]</a>.</p>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>UDP connectionless dan tanpa handshake, sehingga server tidak bisa menolak paket sebelum memprosesnya.</li>
+    <li>Trafik datang dari botnet seperti Mirai, sering dengan alamat pengirim palsu.</li>
+    <li>Amplifikasi melipatgandakan banjir: DNS ±50×, NTP ±200×, Memcached hingga 50.000×.</li>
+    <li>UDP Flood termasuk Bandwidth Saturation, diukur dalam Gbps atau Tbps.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#pengantar"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 1</small><b>Pengantar Topik</b></span></a><a class="nx" href="#proses"><span><small>Komponen 3</small><b>Proses Bertahap</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 3. PROSES ================= -->
+<section class="page" data-page="proses" data-title="Proses Bertahap" aria-labelledby="h1-3">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-night" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 3 · Proses Bertahap</span><h1 id="h1-3">Dari bot sampai server tumbang</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">Serangan berjalan dalam tujuh tahap, dari merekrut perangkat zombie sampai server tidak responsif. Pembela punya kesempatan mendeteksi di tahap-tahap akhir.</p></div></header></div>
+    <div class="s4 stack"><div class="tile stat"><svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-flood" width="600" height="400"/></svg><span class="big">7 tahap</span><span class="lbl">serangan, lalu deteksi oleh pembela</span></div></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="pr-alur"><div class="chead"><span class="no">01</span><h2>Alur serangan</h2><p>Diagram ringkas dari kiri ke kanan.</p></div><div class="body wide">
+      <div class="seqwrap"><svg viewBox="0 0 900 210" role="img" aria-label="Alur: botmaster memberi perintah ke server C2, C2 menggerakkan bot, bot mengirim paket (langsung atau lewat reflector) melalui pipa ISP ke server korban, server membalas ICMP Destination Unreachable." style="min-width:700px">
+        <g font-family="system-ui,sans-serif" font-size="12.5" text-anchor="middle">
+          <g fill="var(--surface)" stroke="var(--b300)" stroke-width="1.5"><rect x="10" y="70" width="110" height="60" rx="20"/><rect x="150" y="70" width="110" height="60" rx="20"/><rect x="290" y="40" width="120" height="120" rx="24"/><rect x="440" y="70" width="120" height="60" rx="20"/></g>
+          <rect x="590" y="78" width="150" height="44" rx="22" fill="var(--b100)" stroke="var(--b400)"/>
+          <rect x="770" y="40" width="120" height="120" rx="24" fill="var(--primary)"/>
+          <g fill="var(--ink)" font-weight="700"><text x="65" y="96">Botmaster</text><text x="205" y="96">Server C2</text><text x="350" y="92">Pasukan bot</text><text x="500" y="96">Reflector</text><text x="665" y="104">Pipa ISP</text></g>
+          <g fill="var(--muted)" font-size="11"><text x="65" y="114">memberi perintah</text><text x="205" y="114">HTTP / IRC / P2P</text><text x="350" y="112">ribuan IoT</text><text x="350" y="128">alamat palsu</text><text x="500" y="114">opsional</text></g>
+          <text x="830" y="94" fill="var(--on-primary)" font-weight="700">Server korban</text><text x="830" y="112" fill="var(--on-primary)" font-size="11" opacity=".85">port 1–65535</text>
+          <g stroke="var(--b600)" stroke-width="2.5" fill="none"><path d="M120 100h26M260 100h26M410 100h26M560 100h26M740 100h26" class="flowline"/></g>
+          <path d="M830 160c0 30-60 40-180 40S420 190 380 166" fill="none" stroke="var(--b400)" stroke-width="2" stroke-dasharray="5 6"/>
+          <text x="610" y="196" fill="var(--muted)" font-size="11">ICMP Destination Unreachable ke alamat (palsu) pengirim</text>
+        </g></svg></div>
+      <p class="hint">Geser diagram ke samping untuk melihat seluruhnya.</p>
+    </div></div>
+    <div class="chapter" id="pr-tahap"><div class="chead"><span class="no">02</span><h2>Tahap demi tahap</h2></div><div class="body">
+      <ol class="process">
+        <li><div><b>Merekrut pasukan.</b>Perangkat IoT dengan password bawaan diinfeksi dan bergabung ke botnet, seperti cara kerja Mirai <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-10">[10]</a>.</div></li>
+        <li><div><b>Menyiapkan penyamaran.</b>Alamat pengirim dipalsukan (IP spoofing), atau dipilih server publik yang bisa memantulkan balasan besar (reflector) <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-2">[2]</a>.</div></li>
+        <li><div><b>Perintah dilepaskan lewat C2.</b>Botmaster memerintahkan semua bot menyerang serentak <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Banjir ke port acak.</b>Paket UDP buatan berukuran besar ditembakkan ke port acak 1–65535 milik korban <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Server memeriksa port.</b>Untuk setiap paket, server mencari aplikasi yang mendengarkan di port tujuan <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-7">[7]</a>.</div></li>
+        <li><div><b>Balasan ICMP Destination Unreachable.</b>Karena tidak ada aplikasi aktif, server membuat dan mengirim balasan "port unreachable" untuk setiap paket <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-5">[5]</a>.</div></li>
+        <li><div><b>Jenuh dan tumbang.</b>Siklus periksa-dan-balas menguras sistem, atau pipa internet penuh lebih dulu. Server menjadi tidak responsif bagi pengguna asli <a class="cite" href="#ref-1">[1]</a>.</div></li>
+      </ol>
+    </div></div>
+    <div class="chapter" id="pr-deteksi"><div class="chead"><span class="no">03</span><h2>Sisi pembela: deteksi</h2></div><div class="body">
+      <p>Tim pemantau keamanan (<strong>SOC</strong>, Security Operations Center) mencari tiga indikator: lonjakan CPU di atas 95%, lonjakan PPS (paket per detik) atau RPS (permintaan per detik) yang tidak wajar, dan dominasi jawaban HTTP 503 "Service Unavailable" <a class="cite" href="#ref-1">[1]</a>. Khusus UDP Flood, tandanya juga berupa paket UDP masuk ke banyak port berbeda dan lonjakan ICMP Destination Unreachable keluar.</p>
+      <div class="code" role="group" aria-label="Perintah deteksi netstat dengan penjelasan per baris">
+        <div class="hd"><span>Terminal Linux · deteksi (hanya membaca)</span></div>
+        <div class="row"><pre><span class="c"># Hitung koneksi SYN_RECV yang menggantung</span>
+netstat -an | grep SYN_RECV | wc -l</pre><div class="ex"><code>netstat -an</code> menampilkan semua koneksi, <code>grep</code> menyaring yang setengah terbuka, <code>wc -l</code> menghitungnya. Lebih dari <b>100</b> adalah indikasi awal SYN Flood <a class="cite" href="#ref-1">[1]</a>.</div></div>
+        <div class="row"><pre><span class="c"># Alamat IP dengan koneksi terbanyak</span>
+netstat -ntu | awk '{print $5}' | cut -d: -f1 | \
+sort | uniq -c | sort -n</pre><div class="ex">Ambil kolom alamat lawan, buang nomor port, lalu hitung kemunculan tiap IP. Angka terbesar ada di paling bawah <a class="cite" href="#ref-1">[1]</a>.</div></div>
+      </div>
+      <div class="note"><svg class="ic"><use href="#i-alert"/></svg><p><span class="k">Catatan jujur.</span> UDP tidak punya "koneksi", jadi daftar <code>netstat</code> tidak banyak membantu untuk UDP Flood, dan pada serangan dengan alamat palsu, IP yang terlihat bukan pelaku sebenarnya. Untuk UDP Flood, pantau grafik PPS, bandwidth, dan CPU.</p></div>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>Rekrut bot, siapkan penyamaran, perintah lewat C2, banjiri port acak.</li>
+    <li>Server memeriksa port lalu membalas ICMP untuk setiap paket.</li>
+    <li>Server tumbang karena CPU habis, pipa penuh, atau keduanya.</li>
+    <li>Deteksi lewat CPU &gt; 95%, lonjakan PPS/RPS, dan banyak HTTP 503.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#konsep"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 2</small><b>Penjelasan Konsep</b></span></a><a class="nx" href="#simulasi"><span><small>Komponen 4</small><b>Simulasi Interaktif</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 4. SIMULASI ================= -->
+<section class="page" data-page="simulasi" data-title="Simulasi Interaktif" aria-labelledby="h1-4">
+  <div class="hello"><span class="eyebrow">Komponen 4 · Simulasi Interaktif</span><h1 id="h1-4">Simulator UDP Flood</h1>
+    <p><strong>Intinya:</strong> pilih skenario, atur parameter, jalankan tahap demi tahap, lalu pilih penanggulangan dan bandingkan hasilnya. Semua angka adalah model buatan untuk belajar, bukan trafik sungguhan.</p></div>
+
+  <div class="sim" id="sim1">
+    <div class="sim-h"><h3>Laboratorium banjir paket</h3><small>Model visual di browser · tidak mengirim apa pun ke jaringan</small></div>
+
+    <div class="sim-sec"><div class="lbl2"><span class="n">1</span>Pilih skenario</div>
+      <div class="scen" role="group" aria-label="Skenario serangan">
+        <button data-scen="normal" aria-pressed="false"><b>Hari normal</b><span>Tanpa serangan, sebagai pembanding</span></button>
+        <button data-scen="direct" aria-pressed="true"><b>Botnet kecil, alamat asli</b><span>150 bot menembak langsung ke port acak</span></button>
+        <button data-scen="spoof" aria-pressed="false"><b>Banjir alamat palsu</b><span>Ribuan bot dengan IP pengirim acak</span></button>
+        <button data-scen="dns" aria-pressed="false"><b>Amplifikasi DNS</b><span>Resolver terbuka, ±50×</span></button>
+        <button data-scen="ntp" aria-pressed="false"><b>Amplifikasi NTP</b><span>Perintah monlist, ±200×</span></button>
+        <button data-scen="mem" aria-pressed="false"><b>Amplifikasi Memcached</b><span>UDP 11211, hingga 50.000×</span></button>
+      </div></div>
+
+    <div class="sim-sec"><div class="lbl2"><span class="n">2</span>Atur parameter</div>
+      <div class="params">
+        <label class="field">Jumlah bot<span class="row"><input type="range" data-p="bots" min="0" max="10000" step="10"><output></output></span></label>
+        <label class="field">Paket per detik per bot<span class="row"><input type="range" data-p="ppb" min="0" max="5000" step="10"><output></output></span></label>
+        <label class="field">Ukuran paket (byte)<span class="row"><input type="range" data-p="size" min="64" max="1500" step="8"><output></output></span><small data-sizehint>Untuk amplifikasi, ini ukuran permintaan ke reflector.</small></label>
+        <label class="field">Bandwidth server (Gbps)<span class="row"><input type="range" data-p="bw" min="1" max="100" step="1"><output></output></span></label>
+        <label class="field">Kapasitas CPU (ribu unit kerja/detik)<span class="row"><input type="range" data-p="cpu" min="100" max="3000" step="50"><output></output></span></label>
+        <label class="field">Port tanpa layanan (%)<span class="row"><input type="range" data-p="closed" min="0" max="100" step="1"><output></output></span></label>
+        <label class="field">Jenis amplifikasi<select data-p="kind"><option value="none">Tanpa amplifikasi</option><option value="dns">DNS · 50×</option><option value="ntp">NTP monlist · 200×</option><option value="mem">Memcached · 50.000×</option></select></label>
+        <label class="field">Alamat pengirim<select data-p="spoof"><option value="0">Asli (alamat bot)</option><option value="1">Dipalsukan / dipantulkan</option></select></label>
+      </div></div>
+
+    <div class="sim-sec"><div class="lbl2"><span class="n">3</span>Jalankan simulasi</div>
+      <div class="ctrl">
+        <button class="ghost" data-act="prev"><svg class="ic sm"><use href="#i-chevl"/></svg>Sebelumnya</button>
+        <button class="play" data-act="play" aria-label="Putar otomatis"><svg class="ic"><use href="#i-play"/></svg></button>
+        <button class="ghost primary" data-act="next">Berikutnya<svg class="ic sm"><use href="#i-chev"/></svg></button>
+        <span class="stepno" data-label></span>
+        <button class="ghost" data-act="reset"><svg class="ic sm"><use href="#i-reset"/></svg>Reset</button>
+      </div>
+      <ol class="stages" data-stages><li>Persiapan</li><li>Bot mengirim paket</li><li>Server memeriksa port</li><li>Balasan ICMP</li><li>Dampak ke pengguna</li><li>Analisis</li></ol>
+      <div class="stage-cap" aria-live="polite"><h4 data-st-title></h4><p data-st-text></p></div>
+      <div style="margin-top:14px"><canvas role="img" aria-label="Visualisasi: bot di kiri mengirim paket melewati pipa ISP ke server di kanan yang memiliki pintu-pintu port. Server membalas dengan pesan ICMP. Isi pipa dan kepadatan paket mengikuti hasil perhitungan model."></canvas></div>
+      <div class="legend" aria-hidden="true">
+        <span><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="var(--c-strong)"/></svg>Paket serangan</span>
+        <span><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="4.5" fill="none" stroke="var(--c-mid)" stroke-width="2"/></svg>Balasan ICMP Destination Unreachable</span>
+        <span><svg viewBox="0 0 14 14"><path d="M7 1.5 12.5 7 7 12.5 1.5 7z" fill="var(--c-mid)"/></svg>Permintaan pengguna asli</span>
+      </div>
+      <div class="kpis" style="margin-top:16px">
+        <div class="kpi" data-k="bw"><div class="v">—</div><div class="l">Bandwidth terpakai</div><div class="bar"><div class="fill"></div></div></div>
+        <div class="kpi" data-k="pps"><div class="v">—</div><div class="l">Paket masuk per detik (PPS)</div></div>
+        <div class="kpi" data-k="cpu"><div class="v">—</div><div class="l">Beban CPU</div><div class="bar"><div class="fill"></div></div></div>
+        <div class="kpi" data-k="icmp"><div class="v">—</div><div class="l">Balasan ICMP per detik</div></div>
+        <div class="kpi" data-k="legit"><div class="v">—</div><div class="l">Permintaan pengguna asli terlayani</div><div class="bar"><div class="fill"></div></div></div>
+      </div></div>
+
+    <div class="sim-sec analysis" data-analysis><div class="lbl2"><span class="n">4</span>Analisis hasil</div><p class="muted">Analisis muncul setelah tahap terakhir. Tekan "Berikutnya" atau putar otomatis.</p></div>
+
+    <div class="sim-sec"><div class="lbl2"><span class="n">5</span>Pilih penanggulangan</div>
+      <div class="chips" role="group" aria-label="Penanggulangan">
+        <label class="chk"><input type="checkbox" data-d="scrub">Scrubbing di hulu (ISP/cloud)</label>
+        <label class="chk"><input type="checkbox" data-d="bcp38">BCP 38 / uRPF di jaringan sumber</label>
+        <label class="chk"><input type="checkbox" data-d="icmprl">Rate limiting balasan ICMP</label>
+        <label class="chk"><input type="checkbox" data-d="closeudp">Tutup layanan UDP yang tidak dipakai</label>
+        <label class="chk"><input type="checkbox" data-d="blockip">Blokir IP satu per satu di firewall lokal</label>
+      </div>
+      <div class="ctrl" style="margin-top:14px"><button class="ghost primary" data-act="evaluate"><svg class="ic sm"><use href="#i-play"/></svg>Jalankan ulang dengan pertahanan</button></div>
+    </div>
+
+    <div class="sim-sec" data-eval><div class="lbl2"><span class="n">6</span>Hasil akhir &amp; evaluasi</div><p class="muted">Pilih satu atau lebih penanggulangan, lalu jalankan ulang untuk melihat perbandingan sebelum dan sesudah.</p></div>
+  </div>
+
+  <div class="article">
+    <div class="chapter" id="sim1-model"><div class="chead"><span class="no">i</span><h2>Cara model menghitung</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Trafik serangan</strong> = jumlah bot × paket per detik × ukuran paket. Untuk amplifikasi, ukuran yang sampai ke korban = ukuran permintaan × faktor (DNS 50×, NTP 200×, Memcached 50.000×) <a class="cite" href="#ref-1">[1]</a>.</li>
+        <li><strong>Pipa</strong>: jika total trafik melebihi bandwidth server, paket dibuang secara proporsional, termasuk paket pengguna asli.</li>
+        <li><strong>CPU</strong>: setiap paket yang lolos butuh 1 unit kerja untuk memeriksa port, ditambah 1 unit jika port kosong karena harus membuat balasan ICMP. Permintaan pengguna asli butuh 3 unit.</li>
+        <li><strong>Pengguna asli</strong>: terdapat 20.000 permintaan per detik berukuran 600 byte. Persentase yang terlayani turun jika pipa penuh atau CPU melebihi 100%.</li>
+        <li><strong>Asumsi pertahanan</strong>: scrubbing membuang 99% trafik serangan di hulu; BCP 38/uRPF diasumsikan diterapkan 75% jaringan sumber; rate limit ICMP membatasi balasan menjadi 1.000 per detik; firewall lokal sanggup memblokir hingga 200 alamat IP.</li>
+      </ul>
+      <p class="muted small">Angka-angka ini disederhanakan agar perbedaan antarskenario terlihat jelas, bukan untuk meramalkan kondisi jaringan sungguhan.</p>
+    </div></div>
+    <div class="chapter" id="uji"><div class="chead"><span class="no">ii</span><h2>Uji pemahaman</h2><p>Enam soal singkat dengan penjelasan.</p></div><div class="body wide">
+      <div class="quiz" id="quiz1"></div>
+      <div class="score" data-scorebar aria-live="polite"><span>Skor <span class="num" data-score>0</span> / <span data-total>6</span> <span style="opacity:.75;margin-left:8px">dijawab <span data-done>0</span></span></span><button class="ghost" data-act="quiz-reset"><svg class="ic sm"><use href="#i-reset"/></svg>Ulangi</button></div>
+    </div></div>
+  </div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#proses"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 3</small><b>Proses Bertahap</b></span></a><a class="nx" href="#pertahanan"><span><small>Komponen 5</small><b>Penanggulangan</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 5. PERTAHANAN ================= -->
+<section class="page" data-page="pertahanan" data-title="Penanggulangan Keamanan" aria-labelledby="h1-5">
+  <div class="bento">
+    <div class="s8"><header class="hero compact">
+      <svg class="scene" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#sc-layers" width="600" height="400"/></svg>
+      <div class="hero-in"><span class="eyebrow">Komponen 5 · Penanggulangan Keamanan</span><h1 id="h1-5">Menahan banjir</h1>
+        <span class="k">Intinya</span>
+        <p class="lead">Banjir volumetrik harus disaring sebelum mencapai pipa korban. Pertahanan di server sendiri hanya membantu jika pipanya belum penuh.</p></div></header></div>
+    <div class="s4 stack"><nav class="tile" aria-label="Isi halaman"><h3 class="th">Di halaman ini</h3><ol class="toc">
+      <li><a href="#d-cegah">Mencegah</a></li><li><a href="#d-perbaiki">Memperbaiki kerentanan</a></li><li><a href="#d-praktik">Praktik yang disarankan</a></li><li><a href="#d-firewall">Mengapa blokir IP lokal gagal</a></li></ol></nav></div>
+  </div>
+  <div class="article">
+    <div class="chapter" id="d-cegah"><div class="chead"><span class="no">01</span><h2>Mencegah</h2></div><div class="body">
+      <div class="defs">
+        <div><h4>Scrubbing di hulu (BGP Anycast)</h4><p>Trafik dibelokkan ke pusat pembersihan cloud berkapasitas besar. Dengan <strong>Anycast</strong>, satu alamat IP diumumkan dari banyak pusat data sehingga banjir terpecah ke lokasi terdekat <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-14">[14]</a>. Inilah solusi utama untuk banjir Gbps–Tbps.</p></div>
+        <div><h4>BCP 38 / uRPF</h4><p>Penyedia internet menyaring paket keluar yang alamat pengirimnya bukan milik jaringannya, sehingga paket palsu dibuang di sumber <a class="cite" href="#ref-2">[2]</a><a class="cite" href="#ref-6">[6]</a>. NIST juga merekomendasikan validasi alamat sumber dengan ACL dan uRPF <a class="cite" href="#ref-11">[11]</a>.</p></div>
+        <div><h4>Rate limiting balasan ICMP</h4><p>Kebanyakan sistem operasi membatasi laju balasan ICMP agar tidak ikut menguras sumber daya saat diserang <a class="cite" href="#ref-7">[7]</a>. Ini membantu CPU, tetapi tidak membebaskan pipa yang sudah penuh.</p></div>
+        <div><h4>Layanan perlindungan DoS</h4><p>CISA menyarankan berlangganan layanan yang mendeteksi aliran trafik abnormal dan mengalihkannya dari jaringan Anda <a class="cite" href="#ref-9">[9]</a>.</p></div>
+      </div>
+      <figure class="analogy"><span class="k">Analogi</span><span class="t">Saringan di hulu sungai</span><p>Sampah yang hanyut lebih mudah disaring di hulu yang lebar daripada di pipa air rumah yang kecil. Kalau sampah sudah menyumbat pipa rumah, membersihkan keran tidak ada gunanya.</p></figure>
+    </div></div>
+    <div class="chapter" id="d-perbaiki"><div class="chead"><span class="no">02</span><h2>Memperbaiki kerentanan</h2></div><div class="body">
+      <ul class="clean">
+        <li><strong>Jangan menjadi reflector.</strong> Matikan akses publik ke <code>monlist</code> NTP, tutup UDP 11211 Memcached dari internet, dan jangan membuka resolver DNS untuk umum <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-8">[8]</a>. Pada konfigurasi NTP umum, <code>monlist</code> dimatikan dengan <em>menambahkan</em> pembatasan <code>noquery</code>.</li>
+        <li><strong>Matikan layanan yang tidak dipakai</strong> agar permukaan serangan mengecil <a class="cite" href="#ref-1">[1]</a>.</li>
+        <li><strong>Ganti password bawaan perangkat IoT</strong> agar tidak direkrut botnet seperti Mirai <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-10">[10]</a>.</li>
+      </ul>
+    </div></div>
+    <div class="chapter" id="d-praktik"><div class="chead"><span class="no">03</span><h2>Praktik yang disarankan</h2></div><div class="body">
+      <ol class="process">
+        <li><div><b>Kenali kondisi normal.</b>Catat PPS, bandwidth, dan CPU harian agar lonjakan mudah dikenali.</div></li>
+        <li><div><b>Pantau indikator SOC.</b>CPU di atas 95%, lonjakan PPS/RPS, dan banyak HTTP 503 <a class="cite" href="#ref-1">[1]</a>.</div></li>
+        <li><div><b>Siapkan rencana darurat.</b>Kontak ISP dan penyedia mitigasi, plus rencana pemulihan bencana <a class="cite" href="#ref-9">[9]</a>.</div></li>
+        <li><div><b>Waspadai tabir asap.</b>Saat menangani DDoS, tetap pantau sistem lain untuk penyusupan senyap <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-9">[9]</a>.</div></li>
+      </ol>
+    </div></div>
+    <div class="chapter" id="d-firewall"><div class="chead"><span class="no">04</span><h2>Mengapa blokir IP lokal gagal</h2></div><div class="body">
+      <ol class="process">
+        <li><div><b>Pipa sudah penuh lebih dulu.</b>Firewall lokal berada di ujung pipa. Banjir Gbps memenuhi jalur dari ISP sebelum firewall sempat memilah, jadi pengguna asli tetap tidak bisa lewat <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-7">[7]</a>.</div></li>
+        <li><div><b>Alamatnya palsu atau sah.</b>Pada spoofing, IP berganti acak. Pada amplifikasi, paket datang dari server publik yang sah <a class="cite" href="#ref-2">[2]</a>.</div></li>
+        <li><div><b>Terlalu banyak sumber.</b>Botnet bisa berisi ratusan ribu perangkat <a class="cite" href="#ref-10">[10]</a>.</div></li>
+      </ol>
+      <p>Pengecualian kecil: untuk botnet sangat kecil tanpa pemalsuan dan pipa yang masih longgar, blokir IP bisa meringankan CPU. Coba buktikan di simulator.</p>
+    </div></div>
+  </div>
+  <div class="tile remember"><h2>Yang perlu diingat</h2><ol>
+    <li>Saring di hulu dengan scrubbing dan Anycast; itu satu-satunya cara menahan banjir Tbps.</li>
+    <li>BCP 38/uRPF membuang paket palsu di sumbernya.</li>
+    <li>Rate limit ICMP membantu CPU, bukan pipa.</li>
+    <li>Jangan biarkan server Anda menjadi reflector, dan ganti password bawaan IoT.</li>
+    <li>Blokir IP di firewall lokal tidak efektif untuk serangan volumetrik.</li></ol></div>
+  <nav class="pager" aria-label="Komponen sebelum dan sesudah"><a href="#simulasi"><svg class="ic"><use href="#i-chevl"/></svg><span><small>Komponen 4</small><b>Simulasi Interaktif</b></span></a><a class="nx" href="#referensi"><span><small>Komponen 6</small><b>Referensi</b></span><svg class="ic"><use href="#i-arrow"/></svg></a></nav>
+</section>
+
+<!-- ================= 6. REFERENSI ================= -->
+<section class="page" data-page="referensi" data-title="Referensi" aria-labelledby="h1-6">
+  <div class="hello"><span class="eyebrow">Komponen 6 · Referensi</span><h1 id="h1-6">Referensi</h1><p>Format APA 7. Nomor di dalam teks, misalnya [1], mengarah ke daftar di bawah. Semua tautan diperiksa dapat dibuka pada November 2026.</p></div>
+  <div class="article"><div class="chapter"><div class="chead"><span class="no">≡</span><h2>Daftar pustaka</h2></div><div class="body">
+    <ol class="refs">
+      <li id="ref-1"><span>Dinata, Y. M., &amp; Wonohadidjojo, D. M. (2026). <em>Network level attacks &amp; defense: Denial-of-Service (DoS/DDoS), botnet, &amp; session hijacking</em> (Modul 07 Bagian 2, slide 40–59) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502, Program Studi Informatika, Universitas Ciputra.</span></li>
+      <li id="ref-2"><span>Dinata, Y. M., &amp; Wonohadidjojo, D. M. (2026). <em>Network level attacks &amp; reconnaissance</em> (Modul 07 Bagian 1, slide 27–30) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502, Program Studi Informatika, Universitas Ciputra.</span></li>
+      <li id="ref-3"><span>Universitas Ciputra. (2026). <em>Week 10: Reconnaissance, enumerasi, dan analisis kerentanan</em> (slide 7–8, 11, 19) [Slide kuliah]. Mata kuliah Cyber Security IMT01307502.</span></li>
+      <li id="ref-4"><span>Postel, J. (1980). <em>User Datagram Protocol</em> (RFC 768). RFC Editor. <a href="https://www.rfc-editor.org/rfc/rfc768">https://www.rfc-editor.org/rfc/rfc768</a></span></li>
+      <li id="ref-5"><span>Postel, J. (1981). <em>Internet Control Message Protocol</em> (RFC 792). RFC Editor. <a href="https://www.rfc-editor.org/rfc/rfc792">https://www.rfc-editor.org/rfc/rfc792</a></span></li>
+      <li id="ref-6"><span>Ferguson, P., &amp; Senie, D. (2000). <em>Network ingress filtering: Defeating denial of service attacks which employ IP source address spoofing</em> (RFC 2827, BCP 38). RFC Editor. <a href="https://www.rfc-editor.org/rfc/rfc2827">https://www.rfc-editor.org/rfc/rfc2827</a></span></li>
+      <li id="ref-7"><span>Cloudflare. (n.d.). <em>UDP flood DDoS attack</em>. Cloudflare Learning Center. <a href="https://www.cloudflare.com/learning/ddos/udp-flood-ddos-attack/">https://www.cloudflare.com/learning/ddos/udp-flood-ddos-attack/</a></span></li>
+      <li id="ref-8"><span>Cybersecurity and Infrastructure Security Agency. (2019). <em>UDP-based amplification attacks</em> (Alert TA14-017A, revisi terakhir 18 Desember 2019). <a href="https://www.cisa.gov/news-events/alerts/2014/01/17/udp-based-amplification-attacks">https://www.cisa.gov/news-events/alerts/2014/01/17/udp-based-amplification-attacks</a></span></li>
+      <li id="ref-9"><span>Cybersecurity and Infrastructure Security Agency. (2021, 1 Februari). <em>Understanding denial-of-service attacks</em>. <a href="https://www.cisa.gov/news-events/news/understanding-denial-service-attacks">https://www.cisa.gov/news-events/news/understanding-denial-service-attacks</a></span></li>
+      <li id="ref-10"><span>Antonakakis, M., April, T., Bailey, M., Bernhard, M., Bursztein, E., Cochran, J., Durumeric, Z., Halderman, J. A., Invernizzi, L., Kallitsis, M., Kumar, D., Lever, C., Ma, Z., Mason, J., Menscher, D., Seaman, C., Sullivan, N., Thomas, K., &amp; Zhou, Y. (2017). Understanding the Mirai botnet. Dalam <em>Proceedings of the 26th USENIX Security Symposium</em> (hlm. 1093–1110). USENIX Association. <a href="https://www.usenix.org/conference/usenixsecurity17/technical-sessions/presentation/antonakakis">https://www.usenix.org/conference/usenixsecurity17/technical-sessions/presentation/antonakakis</a></span></li>
+      <li id="ref-11"><span>Sriram, K., &amp; Montgomery, D. (2019). <em>Resilient interdomain traffic exchange: BGP security and DDoS mitigation</em> (NIST Special Publication 800-189). National Institute of Standards and Technology. <a href="https://csrc.nist.gov/pubs/sp/800/189/final">https://csrc.nist.gov/pubs/sp/800/189/final</a></span></li>
+      <li id="ref-12"><span>Republik Indonesia. (2008). <em>Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik</em>. JDIH BPK. <a href="https://peraturan.bpk.go.id/Details/37589/uu-no-11-tahun-2008">https://peraturan.bpk.go.id/Details/37589/uu-no-11-tahun-2008</a></span></li>
+      <li id="ref-13"><span>Republik Indonesia. (2024). <em>Undang-Undang Nomor 1 Tahun 2024 tentang Perubahan Kedua atas Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik</em>. JDIH BPK. <a href="https://peraturan.bpk.go.id/Details/274494/uu-no-1-tahun-2024">https://peraturan.bpk.go.id/Details/274494/uu-no-1-tahun-2024</a></span></li>
+      <li id="ref-14"><span>Cloudflare. (n.d.). <em>What is Anycast? How does Anycast work?</em> Cloudflare Learning Center. <a href="https://www.cloudflare.com/learning/cdn/glossary/anycast-network/">https://www.cloudflare.com/learning/cdn/glossary/anycast-network/</a></span></li>
+    </ol>
+  </div></div></div>
+  <div class="tile remember"><h2>Peta komponen tugas</h2><ol>
+    <li><a href="#pengantar">Pengantar Topik</a>: nama topik, definisi, tujuan, relevansi.</li>
+    <li><a href="#konsep">Penjelasan Konsep</a>: cara kerja, komponen, contoh kasus Mirai, ancaman terkait.</li>
+    <li><a href="#proses">Proses Bertahap</a>: tujuh tahap serangan dan deteksi.</li>
+    <li><a href="#simulasi">Simulasi Interaktif</a>: skenario, parameter, tahap, analisis, penanggulangan, evaluasi, uji pemahaman.</li>
+    <li><a href="#pertahanan">Penanggulangan Keamanan</a>: mencegah, memperbaiki, praktik yang disarankan.</li>
+    <li><a href="#referensi">Referensi</a>: daftar pustaka dengan sitasi di dalam teks.</li></ol></div>
+</section>
+
+    </main>
+    <footer class="foot">
+      <span><b>Cyber Security (IMT01307502)</b> · Informatika, Universitas Ciputra · Topik: Volumetric Attack, UDP Flood &amp; Port Exhaustion</span>
+      <span>Kelompok: Jefferson Jap (NIM 0706012410072) · Vincent (NIM 0706012410032) · Rifki Indra Nugroho (NIM 0706012410033) · Precious Nathan (NIM 0706012410027)</span>
+      <span><a href="../index.html">Hub proyek</a> · <a href="../mitigasi-ddos-berlapis/index.html">Mitigasi DDoS Berlapis</a> · <a href="../ssl-stripping/index.html">SSL Stripping</a></span>
+    </footer>
+  </div>
+</div>
+<nav class="bottomnav" aria-label="Navigasi komponen">
+  <a href="#pengantar" data-nav="pengantar"><svg class="ic"><use href="#i-intro"/></svg>Pengantar</a>
+  <a href="#konsep" data-nav="konsep"><svg class="ic"><use href="#i-concept"/></svg>Konsep</a>
+  <a href="#proses" data-nav="proses"><svg class="ic"><use href="#i-steps"/></svg>Proses</a>
+  <a href="#simulasi" data-nav="simulasi"><svg class="ic"><use href="#i-sim"/></svg>Simulasi</a>
+  <a href="#pertahanan" data-nav="pertahanan"><svg class="ic"><use href="#i-shield"/></svg>Pertahanan</a>
+  <a href="#referensi" data-nav="referensi"><svg class="ic"><use href="#i-refs"/></svg>Referensi</a>
+</nav>
+<button class="roundbtn" id="toTop" aria-label="Kembali ke atas"><svg class="ic"><use href="#i-up"/></svg></button>
+<script src="../assets/ehe.js"></script>
+<script>
+(function(){
+"use strict";
+const {$,$$,clamp,fmt,icon,C,themeHooks,makeCanvas,rrect,diamond,loop,stepper,quiz}=EHE;
+const el=$('#sim1');
+const FACTOR={none:1,dns:50,ntp:200,mem:50000};
+const PRESET={
+  normal:{bots:0,ppb:0,size:512,bw:10,cpu:600,closed:90,kind:'none',spoof:'0'},
+  direct:{bots:150,ppb:3500,size:1200,bw:10,cpu:600,closed:95,kind:'none',spoof:'0'},
+  spoof:{bots:5000,ppb:1000,size:1400,bw:10,cpu:600,closed:95,kind:'none',spoof:'1'},
+  dns:{bots:3000,ppb:500,size:64,bw:10,cpu:600,closed:100,kind:'dns',spoof:'1'},
+  ntp:{bots:3000,ppb:500,size:64,bw:10,cpu:600,closed:100,kind:'ntp',spoof:'1'},
+  mem:{bots:100,ppb:100,size:64,bw:10,cpu:600,closed:100,kind:'mem',spoof:'1'}};
+const NAMES={normal:'Hari normal',direct:'Botnet kecil, alamat asli',spoof:'Banjir alamat palsu',dns:'Amplifikasi DNS',ntp:'Amplifikasi NTP',mem:'Amplifikasi Memcached'};
+let scen='direct',P=Object.assign({},PRESET.direct),base=null,after=null;
+const LEGIT_PPS=20000,LEGIT_SIZE=600,LEGIT_COST=3;
+
+/* ---------- model ---------- */
+function model(p,d){d=d||{};
+  const f=FACTOR[p.kind];const amp=p.kind!=='none';const spoofed=p.spoof==='1'||amp;
+  const attackerPps=p.bots*p.ppb;
+  let atkBps=attackerPps*p.size*f*8;                         // bit/s arriving at victim
+  let atkPps=amp?atkBps/(1500*8):attackerPps;                 // large responses arrive as ~1500 B fragments
+  const attackerBps=attackerPps*p.size*8;
+  if(d.bcp38&&spoofed){atkBps*=.25;atkPps*=.25;}
+  if(d.scrub){atkBps*=.01;atkPps*=.01;}
+  const legitBps=LEGIT_PPS*LEGIT_SIZE*8,cap=p.bw*1e9;
+  const util=(atkBps+legitBps)/cap,deliver=util>1?1/util:1;
+  const dAtk=atkPps*deliver,dLegit=LEGIT_PPS*deliver;
+  const closed=p.closed/100;
+  let icmp=dAtk*closed;if(d.icmprl)icmp=Math.min(icmp,1000);
+  const blockWorks=d.blockip&&!spoofed&&p.bots>0&&p.bots<=200;
+  const atkWork=blockWorks?dAtk*0.2:dAtk*1+icmp;              // check port (+ build ICMP reply)
+  const cpu=(atkWork+dLegit*LEGIT_COST)/(p.cpu*1000);
+  const served=deliver*(cpu>1?1/cpu:1);
+  return {f,amp,spoofed,attackerPps,attackerBps,atkBps,atkPps,legitBps,util,deliver,inPps:atkPps+LEGIT_PPS,icmp,cpu,served,blockWorks,
+    bottleneck:util>1&&cpu>1?'both':util>1?'bw':cpu>1?'cpu':'none'};}
+
+/* ---------- formatting ---------- */
+function bps(v){return v>=1e12?fmt(v/1e12,2)+' Tbps':v>=1e9?fmt(v/1e9,2)+' Gbps':v>=1e6?fmt(v/1e6,1)+' Mbps':fmt(v/1e3,0)+' kbps';}
+function num(v){return v>=1e6?fmt(v/1e6,2)+' juta':v>=1e3?fmt(v/1e3,1)+' ribu':fmt(v);}
+const pct=v=>fmt(v*100,0)+'%';
+
+/* ---------- params UI ---------- */
+const inputs=$$('[data-p]',el);
+function syncInputs(){inputs.forEach(i=>{i.value=P[i.dataset.p];const o=i.parentElement.querySelector('output');if(o)o.textContent=fmt(+i.value);});}
+inputs.forEach(i=>i.addEventListener('input',()=>{P[i.dataset.p]=i.tagName==='SELECT'?i.value:+i.value;const o=i.parentElement.querySelector('output');if(o)o.textContent=fmt(+i.value);after=null;renderEval();refresh();}));
+$$('[data-scen]',el).forEach(b=>b.addEventListener('click',()=>{scen=b.dataset.scen;P=Object.assign({},PRESET[scen]);$$('[data-scen]',el).forEach(x=>x.setAttribute('aria-pressed',x===b));syncInputs();after=null;renderEval();player.stop();player.go(0);}));
+
+/* ---------- stages ---------- */
+const STAGES=[
+  ['Persiapan','Skenario dan parameter dipasang. Pengguna asli mengirim 20.000 permintaan per detik ke layanan web di port 443. Tekan "Berikutnya" untuk melepaskan serangan.'],
+  ['Bot mengirim paket','Paket UDP buatan ditembakkan ke port acak 1–65535 dan memenuhi pipa ISP menuju server. Perhatikan isi pipa: jika melebihi 100%, paket mulai dibuang, termasuk milik pengguna asli.'],
+  ['Server memeriksa port','Untuk setiap paket yang lolos, server mencari aplikasi yang mendengarkan di port tujuan. Pintu yang menyala berarti "kosong, tidak ada aplikasi".'],
+  ['Balasan ICMP Destination Unreachable','Karena tidak ada aplikasi aktif, server membuat balasan ICMP untuk setiap paket. Pada serangan dengan alamat palsu, balasan ini dikirim ke pihak tak bersalah, bukan ke penyerang.'],
+  ['Dampak ke pengguna asli','Lihat berapa persen permintaan pengguna asli yang masih terlayani. Tanda silang di pintu 443 berarti permintaan gagal.'],
+  ['Analisis','Bagian analisis di bawah menjelaskan apa yang menjadi hambatan utama dan indikator SOC mana yang menyala. Lanjutkan dengan memilih penanggulangan.']];
+const player=stepper({count:()=>STAGES.length,onStep:showStage,prev:$('[data-act=prev]',el),next:$('[data-act=next]',el),play:$('[data-act=play]',el),label:$('[data-label]',el),stages:$('[data-stages]',el)});
+let stage=0;
+function showStage(i){stage=i;$('[data-st-title]',el).textContent=STAGES[i][0];$('[data-st-text]',el).textContent=STAGES[i][1];refresh();sim.running=i>0;if(sim.running)lp.kick();else sim.draw();}
+
+function setKpi(k,v,frac,alert){const box=$('[data-k="'+k+'"]',el);$('.v',box).textContent=v;const f=$('.fill',box);if(f)f.style.width=(clamp(frac||0,0,1)*100)+'%';box.classList.toggle('alert',!!alert);}
+function refresh(){
+  base=model(P,{});const m=base;
+  setKpi('bw',stage>=1?bps(Math.min(m.atkBps+m.legitBps,P.bw*1e9))+' / '+P.bw+' Gbps':'—',stage>=1?m.util:0,stage>=1&&m.util>1);
+  setKpi('pps',stage>=1?num(m.inPps):'—');
+  setKpi('cpu',stage>=2?pct(m.cpu):'—',stage>=2?m.cpu:0,stage>=2&&m.cpu>.95);
+  setKpi('icmp',stage>=3?num(m.icmp):'—');
+  setKpi('legit',stage>=4?pct(m.served):'—',stage>=4?m.served:0,stage>=4&&m.served<.9);
+  renderAnalysis();
+}
+function renderAnalysis(){
+  const box=$('[data-analysis]',el);const m=base;
+  if(stage<5){box.innerHTML='<div class="lbl2"><span class="n">4</span>Analisis hasil</div><p class="muted">Analisis muncul pada tahap terakhir. Tekan "Berikutnya" atau putar otomatis.</p>';return;}
+  let why;
+  if(P.bots===0||P.ppb===0)why='<p><strong>Tidak ada serangan.</strong> Pipa terpakai '+pct(m.util)+' dan CPU '+pct(m.cpu)+'. Ini garis dasar (baseline) untuk membandingkan skenario lain.</p>';
+  else if(m.bottleneck==='bw'||m.bottleneck==='both')why='<p><strong>Hambatan utama: bandwidth.</strong> Trafik masuk '+bps(m.atkBps+m.legitBps)+' melebihi pipa '+P.bw+' Gbps (terpakai '+pct(m.util)+'). Paket dibuang sebelum sampai ke server, sehingga hanya '+pct(m.deliver)+' trafik, termasuk pengguna asli, yang lolos. Pertahanan di dalam server tidak bisa menolong; penyaringan harus di hulu.</p>'+(m.bottleneck==='both'?'<p>Paket yang lolos pun masih membuat CPU kewalahan ('+pct(m.cpu)+').</p>':'');
+  else if(m.bottleneck==='cpu')why='<p><strong>Hambatan utama: CPU.</strong> Pipa masih longgar ('+pct(m.util)+'), tetapi server harus memeriksa '+num(m.atkPps)+' paket per detik dan membuat '+num(m.icmp)+' balasan ICMP per detik. Beban CPU mencapai '+pct(m.cpu)+', sehingga hanya '+pct(m.served)+' permintaan pengguna asli yang terlayani.</p>';
+  else why='<p><strong>Server masih bertahan.</strong> Pipa terpakai '+pct(m.util)+' dan CPU '+pct(m.cpu)+'. Coba naikkan jumlah bot atau paket per detik untuk melihat titik jenuhnya.</p>';
+  let math='';
+  if(m.amp)math='<p><strong>Hitungan amplifikasi:</strong> '+fmt(P.bots)+' bot × '+fmt(P.ppb)+' permintaan/detik × '+P.size+' byte = '+bps(m.attackerBps)+' dari penyerang. Dikali faktor '+fmt(m.f)+'× menjadi '+bps(m.attackerBps*m.f)+' yang dipantulkan ke korban. Alamat pengirimnya adalah server publik yang sah, jadi korban tidak bisa sekadar memblokirnya.</p>';
+  else if(P.bots>0&&P.ppb>0)math='<p><strong>Hitungan trafik:</strong> '+fmt(P.bots)+' bot × '+fmt(P.ppb)+' paket/detik × '+P.size+' byte × 8 bit = '+bps(m.attackerBps)+'.'+(m.spoofed?' Alamat pengirim dipalsukan, sehingga balasan ICMP menghantam pihak lain dan daftar blokir IP tidak berguna.':'')+'</p>';
+  const flags=[['CPU di atas 95%',m.cpu>.95],['Lonjakan PPS (lebih dari 5× normal)',m.inPps/LEGIT_PPS>5],['Dominasi HTTP 503',m.served<.9],['Banjir ICMP keluar',m.icmp>50000]];
+  box.innerHTML='<div class="lbl2"><span class="n">4</span>Analisis hasil · '+NAMES[scen]+'</div>'+why+math+'<div class="lbl2" style="margin-top:12px">Indikator SOC yang menyala</div><div class="flags">'+flags.map(f=>'<span class="flag'+(f[1]?' on':'')+'">'+f[0]+'</span>').join('')+'</div>';
+}
+
+/* ---------- countermeasures & evaluation ---------- */
+const DNAME={scrub:'Scrubbing di hulu',bcp38:'BCP 38 / uRPF',icmprl:'Rate limiting ICMP',closeudp:'Tutup layanan UDP',blockip:'Blokir IP di firewall lokal'};
+$$('[data-d]',el).forEach(c=>c.addEventListener('change',()=>c.closest('.chk').classList.toggle('on',c.checked)));
+function chosen(){const d={};$$('[data-d]',el).forEach(c=>{if(c.checked)d[c.dataset.d]=true;});return d;}
+function feedback(k,b,a){const attack=P.bots>0&&P.ppb>0;
+  if(!attack)return ['part','Hari ini tidak ada serangan, jadi tidak ada yang perlu ditahan. Tetap baik disiapkan sebelum serangan datang.'];
+  switch(k){
+    case 'scrub':return ['good','Trafik serangan dibuang di pusat pembersihan sebelum masuk pipa Anda. Ini pertahanan utama untuk banjir volumetrik.'];
+    case 'bcp38':return b.spoofed?['part','Memangkas paket berpengirim palsu di jaringan asalnya. Efektif, tetapi bergantung pada ISP lain yang menerapkannya; korban tidak bisa mengaktifkannya sendiri saat diserang.']:['bad','Bot memakai alamat aslinya, jadi tidak ada alamat palsu yang bisa disaring.'];
+    case 'icmprl':return b.bottleneck==='cpu'?['part','Mengurangi kerja membuat balasan ICMP sehingga CPU lebih ringan. Paket tetap harus diperiksa satu per satu.']:['bad','Pipa sudah penuh sebelum server membalas apa pun. Membatasi balasan ICMP tidak membebaskan bandwidth yang masuk.'];
+    case 'closeudp':return ['bad','Tidak mengurangi paket yang masuk; justru semua port menjadi kosong. Tetap praktik baik agar server Anda tidak dipakai sebagai reflector untuk menyerang orang lain.'];
+    case 'blockip':return a.blockWorks?(b.util>1?['bad','Sumbernya sedikit sehingga bisa diblokir, tetapi pipa sudah penuh sebelum paket sampai ke firewall.']:['part','Untuk botnet kecil tanpa pemalsuan, firewall bisa memblokir '+fmt(P.bots)+' alamat dan meringankan CPU. Bandwidth tetap terpakai, dan cara ini gagal begitu botnet membesar.']):['bad',b.spoofed?'Alamat pengirim palsu atau milik reflector yang sah, dan pipa sudah penuh sebelum firewall bekerja.':'Terlalu banyak alamat (lebih dari kapasitas daftar blokir), dan pipa bisa penuh sebelum firewall bekerja.'];}
+}
+function renderEval(){
+  const box=$('[data-eval]',el);
+  if(!after){box.innerHTML='<div class="lbl2"><span class="n">6</span>Hasil akhir &amp; evaluasi</div><p class="muted">Pilih satu atau lebih penanggulangan, lalu jalankan ulang untuk melihat perbandingan sebelum dan sesudah.</p>';return;}
+  const b=after.before,a=after.after,keys=after.keys;
+  const score=Math.round(a.served*100);
+  const row=(l,x,y)=>'<div class="row"><span>'+l+'</span><b>'+x+'</b></div>';
+  const col=(t,m)=>'<div class="col"><h5>'+t+'</h5>'+row('Bandwidth terpakai',pct(m.util))+row('Beban CPU',pct(m.cpu))+row('Balasan ICMP/detik',num(m.icmp))+row('Pengguna asli terlayani',pct(m.served))+'</div>';
+  let verdict;
+  if(score>=95)verdict=['Layanan pulih','Kombinasi pilihan Anda menahan serangan ini. Perhatikan pertahanan mana yang benar-benar bekerja di daftar umpan balik.'];
+  else if(score>=60)verdict=['Membaik, belum aman','Sebagian permintaan pengguna asli masih gagal. Cari hambatan yang tersisa: pipa atau CPU?'];
+  else verdict=['Server masih tumbang','Pilihan ini belum menyentuh hambatan utama. Untuk banjir volumetrik, penyaringan harus dilakukan sebelum pipa.'];
+  if(!keys.length)verdict=['Belum ada pertahanan','Pilih minimal satu penanggulangan.'];
+  box.innerHTML='<div class="lbl2"><span class="n">6</span>Hasil akhir &amp; evaluasi · '+NAMES[scen]+'</div>'+
+    '<div class="cmp">'+col('Sebelum',b)+col('Sesudah',a)+'</div>'+
+    '<div class="verdict"><div class="score-ring" style="--p:'+score+'"><span>'+score+'</span></div><div><h4>'+verdict[0]+'</h4><p>'+verdict[1]+' Skor = persentase pengguna asli yang terlayani setelah pertahanan.</p></div></div>'+
+    '<div class="lbl2" style="margin-top:18px">Umpan balik per pilihan</div><ul class="fbl">'+(keys.length?keys.map(k=>{const [t,txt]=feedback(k,b,a);const ic=t==='good'?'i-check':t==='part'?'i-minus':'i-x';const lab=t==='good'?'Efektif':t==='part'?'Membantu sebagian':'Tidak efektif untuk skenario ini';return '<li class="'+t+'"><span class="badge">'+icon(ic)+'</span><span><b>'+DNAME[k]+' · '+lab+'.</b> '+txt+'</span></li>';}).join(''):'<li class="bad"><span class="badge">'+icon('i-x')+'</span><span>Belum ada pilihan.</span></li>')+'</ul>';
+}
+$('[data-act=evaluate]',el).addEventListener('click',()=>{const d=chosen();after={before:model(P,{}),after:model(P,d),keys:Object.keys(d)};renderEval();$('[data-eval]',el).scrollIntoView({block:'nearest'});});
+$('[data-act=reset]',el).addEventListener('click',()=>{scen='direct';P=Object.assign({},PRESET.direct);$$('[data-scen]',el).forEach(x=>x.setAttribute('aria-pressed',x.dataset.scen==='direct'));$$('[data-d]',el).forEach(c=>{c.checked=false;c.closest('.chk').classList.remove('on');});after=null;syncInputs();renderEval();player.stop();player.go(0);});
+
+/* ---------- canvas ---------- */
+const cv=$('canvas',el);let doors=[],pk=[],acc=0,legitAcc=0,marks=[],L={};
+const cvs=makeCanvas(cv,layout);
+function randPort(){let p;do{p=1+Math.floor(Math.random()*65535);}while(p===443);return p;}
+function layout(){const {W,H}=cvs;const sw=Math.min(230,W*.36);L.srv={x:W-sw-12,y:12,w:sw,h:H-24};
+  L.pipe={x:W*.3,w:Math.max(60,L.srv.x-W*.3-24),y:H/2-34,h:68};L.refl=W*.18;
+  const cols=W<560?3:4,rows=5,gw=(sw-16)/cols,gh=(L.srv.h-44)/rows;doors=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)doors.push({x:L.srv.x+8+c*gw+3,y:L.srv.y+36+r*gh+3,w:gw-6,h:gh-6,port:randPort(),flash:0,active:false});
+  const a=doors[Math.floor(doors.length/2)];a.active=true;a.port=443;pk=[];}
+layout();
+const botPos=(i,n)=>({x:30,y:n<=1?cvs.H/2:28+i*(cvs.H-90)/(n-1)});
+const userPos=()=>({x:30,y:cvs.H-24});
+const center=d=>({x:d.x+d.w/2,y:d.y+d.h/2});
+function add(t,a,b,x){const sp=Math.max(cvs.W*.42,220);pk.push(Object.assign({t:0,type:t,sx:a.x,sy:a.y,tx:b.x,ty:b.y,dur:Math.hypot(b.x-a.x,b.y-a.y)/sp},x||{}));}
+const sim={running:false,
+  step(dt){const m=base;if(!m)return;
+    const shown=Math.min(P.bots,8);
+    const vis=P.bots>0&&P.ppb>0?clamp(Math.log10(Math.max(m.atkPps,1))*9-18,6,80):0;
+    acc+=dt*vis;
+    while(acc>=1){acc--;if(pk.length>480||shown===0)continue;const b=botPos(Math.floor(Math.random()*shown),shown);
+      const d=doors.filter(x=>!x.active)[Math.floor(Math.random()*(doors.length-1))];
+      if(m.amp){add('req',b,{x:L.refl,y:b.y+(Math.random()-.5)*30},{door:d});}
+      else add('udp',b,{x:L.pipe.x,y:L.pipe.y+10+Math.random()*(L.pipe.h-20)},{door:d,inPipe:true});}
+    legitAcc+=dt;if(legitAcc>1.3){legitAcc=0;const d=doors.find(x=>x.active);add('legit',userPos(),{x:L.pipe.x,y:L.pipe.y+L.pipe.h-12},{door:d,inPipe:true});}
+    const out=[];
+    for(const p of pk){p.t+=dt;if(p.t<p.dur)continue;
+      if(p.type==='req'){add('udp',{x:p.tx,y:p.ty},{x:L.pipe.x,y:L.pipe.y+10+Math.random()*(L.pipe.h-20)},{door:p.door,inPipe:true,big:true});p.done=true;continue;}
+      if(p.inPipe){ // entering pipe: drop if saturated
+        p.inPipe=false;if(stage>=1&&Math.random()>m.deliver){p.done=true;marks.push({x:p.tx,y:p.ty,life:.6,drop:true});continue;}
+        const c=center(p.door);Object.assign(p,{sx:p.tx,sy:p.ty,tx:c.x,ty:c.y,t:0,dur:Math.hypot(c.x-p.tx,c.y-p.ty)/Math.max(cvs.W*.42,220)});continue;}
+      p.done=true;
+      if(p.type==='udp'){if(stage>=2){p.door.flash=1;p.door.port=randPort();}
+        if(stage>=3&&Math.random()<P.closed/100&&Math.random()<Math.min(1,m.icmp/Math.max(1,m.atkPps*m.deliver*P.closed/100)))out.push(['icmp',center(p.door),{x:L.pipe.x+L.pipe.w,y:p.door.y}]);}
+      else if(p.type==='legit'){if(Math.random()<(m.cpu>1?1/m.cpu:1))out.push(['ok',center(p.door),userPos()]);else marks.push({x:p.tx,y:p.ty,life:1.2});}
+      else if(p.type==='icmp'||p.type==='ok'){}
+    }
+    pk=pk.filter(p=>!p.done);out.forEach(o=>add(o[0],o[1],o[2]));
+    doors.forEach(d=>d.flash=Math.max(0,d.flash-dt*3));marks.forEach(x=>x.life-=dt);marks=marks.filter(x=>x.life>0);},
+  draw(){const {ctx,W,H}=cvs;if(!W)return;const m=base||{util:0,cpu:0};ctx.clearRect(0,0,W,H);ctx.textAlign='center';ctx.textBaseline='middle';
+    // pipe
+    const fill=stage>=1?clamp(m.util,0,1):0;rrect(ctx,L.pipe.x,L.pipe.y,L.pipe.w,L.pipe.h,30);ctx.fillStyle=C.surface;ctx.fill();
+    ctx.save();rrect(ctx,L.pipe.x,L.pipe.y,L.pipe.w,L.pipe.h,30);ctx.clip();ctx.fillStyle=C.light;ctx.globalAlpha=.55;ctx.fillRect(L.pipe.x,L.pipe.y+L.pipe.h*(1-fill),L.pipe.w,L.pipe.h*fill);ctx.restore();ctx.globalAlpha=1;
+    rrect(ctx,L.pipe.x,L.pipe.y,L.pipe.w,L.pipe.h,30);ctx.strokeStyle=m.util>1&&stage>=1?C.strong:C.light;ctx.lineWidth=m.util>1&&stage>=1?2.5:1.5;ctx.stroke();
+    ctx.fillStyle=C.muted;ctx.font='600 11px system-ui,sans-serif';ctx.fillText('Pipa ISP · '+P.bw+' Gbps'+(stage>=1&&m.util>1?' · penuh':''),L.pipe.x+L.pipe.w/2,L.pipe.y-12);
+    if(base&&base.amp){ctx.fillText('Reflector',L.refl,16);for(let i=0;i<4;i++){const y=40+i*(H-100)/3;rrect(ctx,L.refl-16,y-10,32,20,8);ctx.fillStyle=C.surface;ctx.fill();ctx.strokeStyle=C.mid;ctx.lineWidth=1.2;ctx.stroke();ctx.fillStyle=C.muted;}}
+    // server
+    rrect(ctx,L.srv.x,L.srv.y,L.srv.w,L.srv.h,18);ctx.fillStyle=C.surface;ctx.fill();ctx.strokeStyle=stage>=2&&m.cpu>1?C.strong:C.light;ctx.lineWidth=stage>=2&&m.cpu>1?3:1.5;ctx.stroke();
+    ctx.fillStyle=C.ink;ctx.font='700 12.5px system-ui,sans-serif';ctx.fillText('Server korban',L.srv.x+L.srv.w/2,L.srv.y+18);
+    ctx.font='600 10px system-ui,sans-serif';
+    for(const d of doors){rrect(ctx,d.x,d.y,d.w,d.h,7);
+      if(d.active){ctx.fillStyle=C.faint;ctx.fill();ctx.strokeStyle=C.strong;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=C.strong;ctx.fillText('443',d.x+d.w/2,d.y+d.h/2);}
+      else{ctx.fillStyle=d.flash>0?C.light:C.bg;ctx.fill();ctx.strokeStyle=d.flash>0?C.mid:C.faint;ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=d.flash>.3?C.strong:C.muted;ctx.fillText(d.flash>.3?'kosong':String(d.port),d.x+d.w/2,d.y+d.h/2);}}
+    // bots + user
+    const shown=Math.min(P.bots,8);ctx.font='700 10px system-ui,sans-serif';
+    for(let i=0;i<shown;i++){const b=botPos(i,shown);rrect(ctx,b.x-17,b.y-9,34,18,9);ctx.fillStyle=C.faint;ctx.fill();ctx.strokeStyle=C.strong;ctx.lineWidth=1.2;ctx.stroke();ctx.fillStyle=C.strong;ctx.fillText('bot',b.x,b.y);}
+    if(P.bots>shown){ctx.fillStyle=C.muted;ctx.font='600 10.5px system-ui,sans-serif';ctx.textAlign='left';ctx.fillText('+'+fmt(P.bots-shown)+' bot',52,12);ctx.textAlign='center';}
+    const u=userPos();diamond(ctx,u.x,u.y,9);ctx.fillStyle=C.mid;ctx.fill();ctx.strokeStyle=C.strong;ctx.lineWidth=1.4;ctx.stroke();
+    ctx.textAlign='left';ctx.fillStyle=C.ink;ctx.font='600 11px system-ui,sans-serif';ctx.fillText('Pengguna asli',u.x+16,u.y);ctx.textAlign='center';
+    for(const p of pk){const k=clamp(p.t/p.dur,0,1),x=p.sx+(p.tx-p.sx)*k,y=p.sy+(p.ty-p.sy)*k;
+      if(p.type==='udp'){ctx.beginPath();ctx.arc(x,y,p.big?5:3.6,0,7);ctx.fillStyle=C.strong;ctx.fill();}
+      else if(p.type==='req'){ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fillStyle=C.strong;ctx.fill();}
+      else if(p.type==='icmp'){ctx.beginPath();ctx.arc(x,y,3.2,0,7);ctx.strokeStyle=C.mid;ctx.lineWidth=1.6;ctx.stroke();}
+      else{diamond(ctx,x,y,p.type==='legit'?6:4.5);ctx.fillStyle=C.mid;ctx.fill();ctx.strokeStyle=C.strong;ctx.lineWidth=1.1;ctx.stroke();}}
+    for(const x of marks){ctx.globalAlpha=clamp(x.life,0,1);ctx.strokeStyle=x.drop?C.mid:C.strong;ctx.lineWidth=x.drop?1.6:3;const s=x.drop?4:8;ctx.beginPath();ctx.moveTo(x.x-s,x.y-s);ctx.lineTo(x.x+s,x.y+s);ctx.moveTo(x.x+s,x.y-s);ctx.lineTo(x.x-s,x.y+s);ctx.stroke();}ctx.globalAlpha=1;}};
+cvs.after=()=>sim.draw();
+const lp=loop(sim,cv);themeHooks.push(()=>sim.draw());
+
+syncInputs();player.go(0);renderEval();
+
+/* ---------- quiz ---------- */
+quiz($('#quiz1'),[
+ ['Apa yang dilakukan server saat paket UDP tiba di port tanpa aplikasi?',['Mengabaikannya tanpa memproses apa pun','Membalas ICMP Destination Unreachable','Membalas SYN/ACK','Membuka port itu otomatis'],1,'Server memeriksa port, tidak menemukan aplikasi, lalu membalas ICMP Destination Unreachable (tipe 3, kode 3 "port unreachable").'],
+ ['Mengapa UDP mudah dipakai untuk banjir?',['Karena selalu terenkripsi','Karena connectionless dan tanpa handshake','Karena hanya memakai port 80','Karena memblokir alamat palsu'],1,'Tanpa handshake, server tidak bisa memastikan pengirim sebelum memproses paket.'],
+ ['Pada skenario amplifikasi Memcached di simulator, apa hambatan utamanya?',['CPU saja','Bandwidth (pipa penuh)','Memori browser','Tidak ada hambatan'],1,'Faktor hingga 50.000× membuat trafik kecil dari penyerang menjadi ratusan Gbps, jauh melebihi pipa korban.'],
+ ['Pertahanan mana yang paling tepat untuk banjir berukuran Tbps?',['Blokir IP di firewall lokal','Rate limit ICMP','Scrubbing di hulu dengan BGP Anycast','Menutup port 443'],2,'Banjir harus disaring sebelum mencapai pipa korban.'],
+ ['Mengapa BCP 38 tidak membantu skenario "botnet kecil, alamat asli"?',['Karena BCP 38 hanya untuk HTTPS','Karena tidak ada alamat pengirim yang dipalsukan','Karena botnet memakai IPv6','Karena BCP 38 memblokir ICMP'],1,'BCP 38 menyaring paket yang alamat pengirimnya palsu; bot di skenario ini memakai alamat aslinya.'],
+ ['Indikator SOC mana yang khas untuk serangan DoS?',['CPU di atas 95%, lonjakan PPS/RPS, banyak HTTP 503','Banyak email masuk','Gembok browser hilang','Suhu ruangan naik'],0,'Ketiga indikator itu yang dipantau tim SOC saat terjadi DoS.']],$('[data-scorebar]'));
+})();
+</script>
+</body>
+</html>
